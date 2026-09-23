@@ -75,6 +75,43 @@ SWEEP_DEGREES = 30.0
 SWEEP_TICS = int(math.ceil(SWEEP_DEGREES / TURN_DEGREES_PER_TIC))  # 12 tics, ~343 ms
 SWEEP_MS = SWEEP_TICS * MS_PER_TIC
 SCAN_ANSWER = "scan"
+
+# How long each action is held once chosen, in tics. Generalised from the sweep,
+# because thrashing has now been measured three separate ways and rewording never
+# fixed any of them:
+#
+#   * `scan` reversing direction every interval, covering 10.6 degrees instead of
+#     searching -- fixed by committing to 12 tics, worth ~9x on score.
+#   * `aim_left`/`aim_right` oscillating 45%/45% in deadly_corridor while the
+#     player travelled 0% of the map.
+#   * weapon switches on 98% of deathmatch decisions (`keep` chosen 2% of the
+#     time), each costing the moment the switch takes.
+#
+# An action with no entry here decays after one interval as before. These are
+# short: long enough to stop a flip-flop, short enough that the model still steers.
+COMMITMENT_TICS: dict[str, int] = {
+    "scan": SWEEP_TICS,      # 12 tics, ~32 degrees
+    "aim_left": 4,           # ~10.6 degrees, one interval of turning
+    "aim_right": 4,
+    "dodge_left": 5,
+    "dodge_right": 5,
+    "retreat": 6,
+}
+
+# What may interrupt a running commitment. A shot lined up beats anything; getting
+# out of trouble beats aiming; aiming beats wandering. Equal or lower urgency is
+# ignored until the commitment expires -- that is the whole anti-thrash mechanism.
+URGENCY: dict[str, int] = {
+    "hold": 3,
+    "dodge_left": 2, "dodge_right": 2, "retreat": 2,
+    "aim_left": 1, "aim_right": 1, "left": 1, "right": 1,
+    "advance": 0, "scan": 0,
+}
+
+# A weapon switch costs the moment it takes, so hold the new weapon a while before
+# reconsidering. Ignored answers here are switches; `keep` is always free.
+WEAPON_COMMITMENT_TICS = 20
+NO_SWITCH = "keep"
 WARMUP_CALLS = 2  # the first call measured 686 ms cold; never let that hit a live episode
 
 
@@ -111,6 +148,8 @@ class EpisodeResult:
     errors: int
     sweeps: int = 0
     sweeps_interrupted: int = 0
+    moves_ignored: int = 0       # thrash suppressed by a running commitment
+    switches_ignored: int = 0
     latencies_ms: list[float] = field(default_factory=list)
 
     @property
@@ -159,12 +198,22 @@ class ActionLatch:
         self._buttons = list(buttons)
         self._interval_ms = interval_ms
         self._sweep_ms = sweep_ms
-        self._action = actions.neutral(buttons)
-        self._expires_at = 0.0
         self._generation = 0
         self.stale_replies = 0
-        # A committed sweep outlives the ordinary one-interval decay.
-        self._sweep_expires_at = 0.0
+
+        self._fire = False
+        self._move: str | None = None
+        self._weapon: str | None = None
+        self._expires_at = 0.0
+        # A commitment outlives the ordinary one-interval decay.
+        self._commitment_expires_at = 0.0
+        self._committed_move: str | None = None
+        self._weapon_locked_until = 0.0
+
+        self.commitments_started = 0
+        self.commitments_interrupted = 0
+        self.moves_ignored = 0       # answers dropped because a commitment was running
+        self.switches_ignored = 0
         self.sweeps_started = 0
         self.sweeps_interrupted = 0
 
@@ -173,18 +222,30 @@ class ActionLatch:
         return self._generation
 
     @property
+    def committed(self) -> bool:
+        return self._commitment_expires_at > 0.0
+
+    @property
+    def committed_move(self) -> str | None:
+        return self._committed_move if self.committed else None
+
+    @property
     def sweeping(self) -> bool:
-        return self._sweep_expires_at > 0.0
+        """Still the sweep, for the UI -- now one commitment among several."""
+        return self.committed and self._committed_move == SCAN_ANSWER
 
     def sweep_remaining_ms(self, now_ms: float) -> float:
-        return max(0.0, self._sweep_expires_at - now_ms)
+        return max(0.0, self._commitment_expires_at - now_ms) if self.sweeping else 0.0
 
     def bump_generation(self) -> int:
         """Invalidate every reply now in flight. Called when an episode restarts."""
         self._generation += 1
-        self._action = actions.neutral(self._buttons)
+        self._fire = False
+        self._move = self._weapon = None
         self._expires_at = 0.0
-        self._sweep_expires_at = 0.0
+        self._commitment_expires_at = 0.0
+        self._committed_move = None
+        self._weapon_locked_until = 0.0
         return self._generation
 
     def apply(self, decision: Decision, generation: int, now_ms: float, *, fire_threshold: float) -> bool:
@@ -193,38 +254,95 @@ class ActionLatch:
             self.stale_replies += 1
             return False
 
-        turn = decision.get("turn")
-        wants_scan = turn is not None and str(turn.value) == SCAN_ANSWER
+        fire_answer = decision.get("fire")
+        self._fire = bool(fire_answer and float(fire_answer.value) >= fire_threshold)
 
-        if wants_scan:
-            # Start a sweep, or let one already running continue. Continuing rather
-            # than restarting is what keeps a sweep to one direction and one arc.
-            if not self.sweeping:
-                self._sweep_expires_at = now_ms + self._sweep_ms
-                self.sweeps_started += 1
-        elif self.sweeping:
-            # Anything else means the model has something better to do than search.
-            # Abandon the arc immediately rather than finishing it first.
-            self._sweep_expires_at = 0.0
-            self.sweeps_interrupted += 1
+        move_answer = decision.get("turn") or decision.get("move")
+        wanted = str(move_answer.value) if move_answer is not None else None
+        self._apply_move(wanted, now_ms)
 
-        self._action = actions.from_decision(self._buttons, decision, fire_threshold=fire_threshold)
+        weapon_answer = decision.get("weapon")
+        self._apply_weapon(str(weapon_answer.value) if weapon_answer is not None else None, now_ms)
+
         self._expires_at = now_ms + self._interval_ms
         return True
+
+    def _apply_move(self, wanted: str | None, now_ms: float) -> None:
+        """Take the new move answer, unless a commitment outranks it."""
+        if wanted is None:
+            return
+
+        running = self.committed and now_ms < self._commitment_expires_at
+        if running:
+            current = self._committed_move
+            if wanted == current:
+                # Continuing, not restarting -- that is what keeps one sweep to one
+                # arc rather than extending it forever.
+                self._move = wanted
+                return
+            if URGENCY.get(wanted, 0) <= URGENCY.get(current, 0):
+                # The anti-thrash rule: an equally-urgent alternative is exactly the
+                # flip-flop this exists to stop.
+                self.moves_ignored += 1
+                return
+            # Something more urgent -- a shot lined up, or trouble. Drop the arc.
+            self._end_commitment(current)
+
+        self._move = wanted
+        tics = COMMITMENT_TICS.get(wanted)
+        if tics:
+            self._commitment_expires_at = now_ms + tics * MS_PER_TIC
+            self._committed_move = wanted
+            self.commitments_started += 1
+            if wanted == SCAN_ANSWER:
+                self.sweeps_started += 1
+        else:
+            self._commitment_expires_at = 0.0
+            self._committed_move = None
+
+    def _end_commitment(self, which: str | None) -> None:
+        self._commitment_expires_at = 0.0
+        self._committed_move = None
+        self.commitments_interrupted += 1
+        if which == SCAN_ANSWER:
+            self.sweeps_interrupted += 1
+
+    def _apply_weapon(self, wanted: str | None, now_ms: float) -> None:
+        """A switch costs the moment it takes, so hold the new weapon a while."""
+        if wanted is None:
+            return
+        if wanted == NO_SWITCH:
+            self._weapon = None
+            return
+        if now_ms < self._weapon_locked_until:
+            self.switches_ignored += 1
+            self._weapon = None
+            return
+        self._weapon = wanted
+        self._weapon_locked_until = now_ms + WEAPON_COMMITMENT_TICS * MS_PER_TIC
 
     def current(self, now_ms: float) -> list[int]:
         """The buttons to press now.
 
-        A committed sweep keeps its action past the ordinary interval decay, so the
-        turn covers real ground instead of stuttering for 10 degrees at a time.
+        A commitment keeps its *move* past the ordinary interval decay, so a turn
+        covers real ground instead of stuttering. The trigger and the weapon still
+        decay normally: holding a turn is execution, holding a stale shot is not.
         """
-        if self.sweeping:
-            if now_ms < self._sweep_expires_at:
-                return list(self._action)
-            self._sweep_expires_at = 0.0
-        if now_ms >= self._expires_at:
-            self._action = actions.neutral(self._buttons)
-        return list(self._action)
+        committed = self.committed and now_ms < self._commitment_expires_at
+        if self.committed and not committed:
+            self._commitment_expires_at = 0.0
+            self._committed_move = None
+
+        live = now_ms < self._expires_at
+        if not live and not committed:
+            return actions.neutral(self._buttons)
+
+        return actions.compose(
+            self._buttons,
+            fire=self._fire if live else False,
+            move=self._committed_move if committed else (self._move if live else None),
+            weapon=self._weapon if live else None,
+        )
 
 
 class MonotonicClock:
@@ -427,6 +545,8 @@ class DecisionLoop:
         result.stale_replies = self.latch.stale_replies
         result.sweeps = self.latch.sweeps_started
         result.sweeps_interrupted = self.latch.sweeps_interrupted
+        result.moves_ignored = self.latch.moves_ignored
+        result.switches_ignored = self.latch.switches_ignored
         result.errors = len(self.errors)
         return result
 

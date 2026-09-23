@@ -50,6 +50,7 @@ def run(name: str, client, scenario, episodes: int, seed: int, record: list | No
     scores, kills, answers, lat = [], [], Counter(), []
 
     for episode in range(episodes):
+        episode_rows: list = []
         game = make_game(scenario, seed=seed + episode)
         loop = DecisionLoop(
             game, client, scenario.battery,
@@ -68,7 +69,7 @@ def run(name: str, client, scenario, episodes: int, seed: int, record: list | No
                 if answer.type == "choice":
                     answers[f"{qname}:{answer.value}"] += 1
             if record is not None:
-                record.append({
+                episode_rows.append({
                     "state": tick.state,
                     "answers": {
                         qname: {"type": a.type, "value": a.value,
@@ -84,6 +85,18 @@ def run(name: str, client, scenario, episodes: int, seed: int, record: list | No
             game.close()
         scores.append(result.score)
         kills.append(result.killcount)
+        if record is not None:
+            # Tag every row with how its episode ended, so training can keep only
+            # the good ones. The teacher's mean is mediocre, but its best episodes
+            # are well above the scripted baseline -- filtered cloning needs the
+            # outcome, not just the decision.
+            for position, row in enumerate(episode_rows):
+                row["episode"] = episode
+                row["episode_score"] = result.score
+                row["episode_kills"] = result.killcount
+                row["tick_index"] = position
+                row["scenario"] = scenario.name
+            record.extend(episode_rows)
         print(f"    {name}: ep{episode + 1} score={result.score:+7.1f} kills={result.killcount:.0f}", flush=True)
 
     total = sum(answers.values()) or 1
@@ -108,7 +121,9 @@ def main() -> None:
     parser.add_argument("--episodes", type=int, default=6)
     parser.add_argument("--seed", type=int, default=8000)
     parser.add_argument("--url", default="http://127.0.0.1:8000")
-    parser.add_argument("--harvest", type=Path, help="write LAYA's lockstep decisions here as JSONL")
+    parser.add_argument("--harvest", type=Path, help="append LAYA's lockstep decisions here as JSONL")
+    parser.add_argument("--keep-above", type=float, default=5.0,
+                        help="episode score above which rows are worth cloning")
     args = parser.parse_args()
 
     scenario = scenarios.get(args.scenario)
@@ -131,10 +146,17 @@ def main() -> None:
 
     if args.harvest and harvested:
         args.harvest.parent.mkdir(parents=True, exist_ok=True)
-        with args.harvest.open("w") as sink:
+        # Append, so harvests accumulate across runs and prompt revisions.
+        with args.harvest.open("a") as sink:
             for row in harvested:
                 sink.write(json.dumps(row) + "\n")
+        by_score = sorted({(r["episode"], r["episode_score"]) for r in harvested},
+                          key=lambda pair: -pair[1])
+        keepable = sum(1 for r in harvested if r["episode_score"] >= args.keep_above)
         print(f"\nharvested {len(harvested)} lockstep decisions -> {args.harvest}")
+        print(f"  episode scores: {[round(s, 1) for _, s in by_score]}")
+        print(f"  {keepable} rows from episodes scoring >= {args.keep_above} "
+              f"({keepable / len(harvested):.0%}) are usable for filtered cloning")
 
     by_name = {r["name"]: r for r in results}
     laya_score, scripted_score = by_name["laya"]["mean_score"], by_name["scripted"]["mean_score"]

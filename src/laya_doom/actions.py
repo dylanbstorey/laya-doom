@@ -82,6 +82,33 @@ def from_answers(
     return action
 
 
+def compose(
+    buttons: Sequence[str],
+    *,
+    fire: bool = False,
+    move: str | None = None,
+    weapon: str | None = None,
+) -> list[int]:
+    """Build a button vector from named parts.
+
+    The latch needs this because a committed move and a fresh trigger arrive at
+    different times: while a commitment is running the model's newer *move* answer
+    is ignored, but its newer *fire* answer is not -- refusing a shot because the
+    player is mid-turn would be the code overriding the decision that matters most.
+    """
+    action = neutral(buttons)
+    index = {name: position for position, name in enumerate(buttons)}
+    if fire and ATTACK_BUTTON in index:
+        action[index[ATTACK_BUTTON]] = 1
+    for answer in (move, weapon):
+        if answer is None:
+            continue
+        wanted = ANSWER_BUTTONS.get(str(answer))
+        if wanted and wanted in index:
+            action[index[wanted]] = 1
+    return action
+
+
 def from_decision(
     buttons: Sequence[str],
     decision: Decision,

@@ -420,6 +420,36 @@ DEATHMATCH_WEAPON = {
     },
 }
 
+# A move question that states the *strategy* rather than only describing options.
+# Every option list so far has said what each choice means without saying what the
+# player is trying to do, and the measured failures were all failures of priority:
+# aiming forever instead of advancing, advancing forever instead of aiming. The
+# ordering here is explicit so the model has something to rank against.
+DEATHMATCH_MOVE_STRATEGY = {
+    "type": "choice",
+    "instructions": (
+        "The player is in a deathmatch arena. Only killing enemies scores points, and the player "
+        "cannot kill anything it cannot see, so the plan is: keep moving to find enemies; when "
+        "one appears, turn until it is centred; then stand still and shoot it until it dies; "
+        "break off only if badly hurt. Work down that list and pick the first step that applies "
+        "right now."
+    ),
+    "criteria": {
+        "hold": "An enemy is centred in the crosshair, so stand still and keep shooting it",
+        "aim_left": "An enemy is visible to the left of the crosshair, so turn left until it is centred",
+        "aim_right": "An enemy is visible to the right of the crosshair, so turn right until it is centred",
+        "retreat": "The player is badly hurt and about to die, so back away",
+        "dodge_left": "An enemy is close and shooting, so sidestep left",
+        "dodge_right": "An enemy is close and shooting, so sidestep right",
+        "advance": "Nothing needs dealing with, so move forward to find enemies",
+    },
+}
+
+DEATHMATCH_MOVE_VARIANTS = {
+    "plain": DEATHMATCH_MOVE,
+    "strategy": DEATHMATCH_MOVE_STRATEGY,
+}
+
 DEATHMATCH_WEAPON_VARIANTS = {
     "blind": DEATHMATCH_WEAPON_BLIND,
     "inventory": DEATHMATCH_WEAPON,
