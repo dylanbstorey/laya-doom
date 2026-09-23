@@ -175,6 +175,10 @@ function onTick(message) {
   $("ammo").textContent = fmt(message.ammo);
   $("kills").textContent = fmt(message.kills);
   $("tick").textContent = message.tick;
+  // Maps with a destination report how far along it the player is.
+  const hasProgress = message.progress !== null && message.progress !== undefined;
+  $("progress-stat").hidden = !hasProgress;
+  if (hasProgress) $("progress").textContent = `${message.progress}%`;
   renderKeys(message.buttons ?? ["TURN_LEFT", "TURN_RIGHT", "ATTACK"], message.pressed);
   $("sweep").hidden = !message.sweeping;
 
@@ -243,6 +247,23 @@ $("stop").onclick = async () => {
   setStatus("Paused.");
 };
 $("restart").onclick = () => post("/api/restart");
+function resetView() {
+  latencies.length = 0;
+  logged = 0;
+  $("log").replaceChildren();
+  $("log-count").textContent = 0;
+  $("episodes").replaceChildren();
+}
+
+$("scenario").onchange = async (event) => {
+  resetView();
+  await post(`/api/scenario/${event.target.value}`);
+  const status = await fetch("/api/status").then((r) => r.json());
+  budgetMs = status.interval_ms ?? budgetMs;
+  $("scenario-note").textContent = status.notes ?? "";
+  setStatus(`Scenario: ${event.target.value}. Press Start.`);
+};
+
 $("policy").onchange = async (event) => {
   latencies.length = 0;
   logged = 0;
@@ -258,6 +279,8 @@ fetch("/api/status")
   .then((status) => {
     budgetMs = status.interval_ms ?? budgetMs;
     $("policy").value = status.policy;
+    $("scenario").value = status.scenario;
+    $("scenario-note").textContent = status.notes ?? "";
     if (status.error) setStatus(status.error, true);
   });
 

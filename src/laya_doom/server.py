@@ -26,11 +26,17 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from .baselines import RandomClient, ScriptedClient
+from . import scenarios
+from .baselines import (
+    AlwaysForwardClient,
+    CorridorScriptedClient,
+    RandomClient,
+    RandomCorridorClient,
+    ScriptedClient,
+)
 from .client import DecisionClient, DecisionError, LayaMpsClient
 from .game import DEFAULT_SCENARIO, make_game
-from .loop import DECISION_INTERVAL_MS, DecisionLoop, EpisodeResult, TickRecord
-from .questions import BATTERY
+from .loop import MS_PER_TIC, DecisionLoop, EpisodeResult, TickRecord
 
 STATIC = Path(__file__).parent / "static"
 QUEUE_SIZE = 8  # a couple of intervals of slack; beyond that, drop old frames
@@ -82,6 +88,7 @@ def render_record(record: TickRecord, policy: str) -> dict:
         "health": record.health,
         "ammo": record.ammo,
         "kills": record.killcount,
+        "progress": record.state.get("percent_of_the_way_to_the_goal"),
         "latency_ms": None if decision is None else decision.latency_ms,
         "server_ms": None if decision is None else decision.server_ms,
         "answers": answers,
@@ -93,9 +100,17 @@ def render_record(record: TickRecord, policy: str) -> dict:
 class SessionConfig:
     policy: str = "laya"
     scenario: str = DEFAULT_SCENARIO
-    interval_ms: float = DECISION_INTERVAL_MS
     fire_threshold: float = 0.5
     url: str = "http://127.0.0.1:8000"
+
+    @property
+    def scenario_config(self):
+        return scenarios.get(self.scenario)
+
+    @property
+    def interval_ms(self) -> float:
+        """Each scenario sets its own cadence -- see scenarios.py."""
+        return self.scenario_config.interval_tics * MS_PER_TIC
 
 
 class Session:
@@ -149,11 +164,22 @@ class Session:
     # -- worker ------------------------------------------------------------
 
     def _build_client(self) -> DecisionClient:
+        corridor = self.config.scenario_config.has_goal
         if self.config.policy == "scripted":
-            return ScriptedClient()
+            return CorridorScriptedClient() if corridor else ScriptedClient()
         if self.config.policy == "random":
-            return RandomClient()
+            return RandomCorridorClient() if corridor else RandomClient()
+        if self.config.policy == "forward":
+            return AlwaysForwardClient()
         return LayaMpsClient(self.config.url)
+
+    def set_scenario(self, name: str) -> None:
+        was_running = self.running
+        self.stop()
+        self.config.scenario = name
+        self.episodes = []
+        if was_running:
+            self.start()
 
     def _publish(self, message: dict) -> None:
         try:
@@ -173,11 +199,13 @@ class Session:
             client = self._build_client()
             while not self._stop.is_set():
                 self._restart.clear()
-                game = make_game(self.config.scenario)
+                scenario = self.config.scenario_config
+                game = make_game(scenario)
                 loop = DecisionLoop(
-                    game, client, BATTERY,
+                    game, client, scenario.battery,
                     interval_ms=self.config.interval_ms,
                     fire_threshold=self.config.fire_threshold,
+                    goal_x=scenario.goal_x,
                 )
                 try:
                     result = loop.run_episode(
@@ -275,7 +303,13 @@ def create_app(config: SessionConfig | None = None) -> FastAPI:
             "fire_threshold": session.config.fire_threshold,
             "episodes": len(session.episodes),
             "error": session.error,
-            "questions": {name: question["type"] for name, question in BATTERY.items()},
+            "scenarios": list(scenarios.ALL),
+            "has_goal": session.config.scenario_config.has_goal,
+            "notes": session.config.scenario_config.notes,
+            "questions": {
+                name: question["type"]
+                for name, question in session.config.scenario_config.battery.items()
+            },
         }
 
     @app.post("/api/start")
@@ -295,10 +329,17 @@ def create_app(config: SessionConfig | None = None) -> FastAPI:
 
     @app.post("/api/policy/{policy}")
     def policy(policy: str) -> dict:
-        if policy not in {"laya", "scripted", "random"}:
+        if policy not in {"laya", "scripted", "random", "forward"}:
             return {"error": f"unknown policy {policy!r}"}
         session.set_policy(policy)
         return {"policy": session.config.policy, "running": session.running}
+
+    @app.post("/api/scenario/{name}")
+    def scenario(name: str) -> dict:
+        if name not in scenarios.ALL:
+            return {"error": f"unknown scenario {name!r}"}
+        session.set_scenario(name)
+        return {"scenario": session.config.scenario, "running": session.running}
 
     @app.websocket("/ws")
     async def stream(socket: WebSocket) -> None:
