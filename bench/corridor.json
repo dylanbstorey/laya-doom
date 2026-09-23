@@ -1,112 +1,83 @@
 [
  {
   "name": "forward",
-  "mean_score": 271.60026931762695,
-  "sd": 123.97629735938327,
-  "mean_progress": 27.75,
-  "best_progress": 39,
+  "mean_score": 214.67227745056152,
+  "sd": 184.21240736565022,
+  "mean_progress": 23.375,
+  "best_progress": 44,
   "fire_rate": 1.0,
   "moves": {
    "advance": 1.0
   },
-  "p50_ms": 0.00037497375160455704,
+  "p50_ms": 0.0004169996827840805,
   "skipped": 0.0
  },
  {
   "name": "scripted",
-  "mean_score": 83.82752990722656,
-  "sd": 191.51810050649215,
-  "mean_progress": 19.25,
-  "best_progress": 32,
-  "fire_rate": 0.02692664809656453,
+  "mean_score": -16.81355094909668,
+  "sd": 91.99706957275701,
+  "mean_progress": 7.375,
+  "best_progress": 12,
+  "fire_rate": 0.03254437869822485,
   "moves": {
-   "aim_right": 0.314,
-   "aim_left": 0.305,
-   "advance": 0.199,
-   "retreat": 0.155,
-   "hold": 0.027
+   "advance": 0.322,
+   "aim_right": 0.306,
+   "aim_left": 0.304,
+   "retreat": 0.038,
+   "hold": 0.03
   },
-  "p50_ms": 0.002624932676553726,
+  "p50_ms": 0.0024579931050539017,
   "skipped": 0.0
  },
  {
   "name": "random",
-  "mean_score": -104.35003280639648,
-  "sd": 9.016640329733603,
-  "mean_progress": 1.5,
-  "best_progress": 3,
-  "fire_rate": 0.4567901234567901,
+  "mean_score": -64.35234069824219,
+  "sd": 86.35722935201579,
+  "mean_progress": 4.875,
+  "best_progress": 18,
+  "fire_rate": 0.48747913188647746,
   "moves": {
-   "retreat": 0.21,
-   "aim_left": 0.16,
-   "aim_right": 0.148,
-   "hold": 0.148,
-   "dodge_left": 0.123,
-   "advance": 0.123,
-   "dodge_right": 0.086
+   "aim_left": 0.155,
+   "hold": 0.154,
+   "advance": 0.15,
+   "aim_right": 0.149,
+   "retreat": 0.14,
+   "dodge_right": 0.139,
+   "dodge_left": 0.114
   },
-  "p50_ms": 0.004500034265220165,
+  "p50_ms": 0.004417030140757561,
   "skipped": 0.0
  },
  {
   "name": "laya/blocking",
-  "mean_score": 107.23709106445312,
-  "sd": 118.64334068809801,
-  "mean_progress": 16.25,
-  "best_progress": 29,
-  "fire_rate": 0.05370101596516691,
+  "mean_score": 343.2345600128174,
+  "sd": 814.2870133533845,
+  "mean_progress": 25.875,
+  "best_progress": 97,
+  "fire_rate": 0.08403361344537816,
   "moves": {
-   "aim_right": 0.367,
-   "aim_left": 0.356,
-   "advance": 0.232,
-   "hold": 0.045
+   "aim_left": 0.378,
+   "aim_right": 0.361,
+   "advance": 0.192,
+   "hold": 0.069
   },
-  "p50_ms": 117.22145893145353,
-  "skipped": 97.25
+  "p50_ms": 117.7150410367176,
+  "skipped": 44.625
  },
  {
   "name": "laya/threat",
-  "mean_score": 60.622894287109375,
-  "sd": 147.02124802548036,
-  "mean_progress": 12.5,
-  "best_progress": 26,
-  "fire_rate": 0.05517241379310345,
+  "mean_score": -35.107622146606445,
+  "sd": 84.71447932007484,
+  "mean_progress": 5.625,
+  "best_progress": 18,
+  "fire_rate": 0.10196078431372549,
   "moves": {
-   "aim_left": 0.441,
-   "aim_right": 0.438,
-   "advance": 0.066,
+   "aim_left": 0.42,
+   "aim_right": 0.408,
+   "advance": 0.118,
    "hold": 0.055
   },
-  "p50_ms": 125.70043746381998,
-  "skipped": 68.25
- },
- {
-  "name": "laya/lean",
-  "mean_score": -115.96212768554688,
-  "sd": 0.02013494593539904,
-  "mean_progress": 0,
-  "best_progress": 0,
-  "fire_rate": 0.12857142857142856,
-  "moves": {
-   "aim_right": 0.5,
-   "aim_left": 0.471,
-   "hold": 0.029
-  },
-  "p50_ms": 105.17325002001598,
-  "skipped": 4.25
- },
- {
-  "name": "laya/binary",
-  "mean_score": 8.11148452758789,
-  "sd": 42.93414262268311,
-  "mean_progress": 8.5,
-  "best_progress": 13,
-  "fire_rate": 0.21818181818181817,
-  "moves": {
-   "hold": 0.636,
-   "advance": 0.364
-  },
-  "p50_ms": 86.3844589330256,
-  "skipped": 0.75
+  "p50_ms": 125.96670899074525,
+  "skipped": 28.625
  }
 ]

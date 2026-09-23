@@ -1,0 +1,49 @@
+[
+ {
+  "name": "scripted",
+  "mean_score": 0.5,
+  "sd": 0.7071067811865476,
+  "mean_kills": 0.5,
+  "p50_ms": 0.002499902620911598,
+  "answers": {
+   "move:advance": 0.5,
+   "weapon:chaingun": 0.5
+  },
+  "samples": 0
+ },
+ {
+  "name": "random",
+  "mean_score": 1.5,
+  "sd": 2.1213203435596424,
+  "mean_kills": 0.5,
+  "p50_ms": 0.000500003807246685,
+  "answers": {
+   "move:retreat": 0.191,
+   "move:aim_left": 0.157,
+   "move:dodge_right": 0.152,
+   "move:aim_right": 0.146,
+   "move:hold": 0.124,
+   "move:advance": 0.124,
+   "move:dodge_left": 0.107
+  },
+  "samples": 0
+ },
+ {
+  "name": "laya",
+  "mean_score": 7.0,
+  "sd": 7.0710678118654755,
+  "mean_kills": 3.0,
+  "p50_ms": 156.01737494580448,
+  "answers": {
+   "weapon:pistol": 0.411,
+   "move:retreat": 0.194,
+   "move:aim_left": 0.104,
+   "move:aim_right": 0.104,
+   "move:hold": 0.058,
+   "weapon:chaingun": 0.045,
+   "weapon:shotgun": 0.043,
+   "move:advance": 0.04
+  },
+  "samples": 0
+ }
+]

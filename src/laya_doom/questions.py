@@ -336,3 +336,57 @@ CORRIDOR_BATTERY: dict[str, dict] = {
     "fire": FIRE_QUESTION,
     "move": CORRIDOR_MOVE,
 }
+
+
+# ---------------------------------------------------------------------------
+# deathmatch
+# ---------------------------------------------------------------------------
+# The map where a typed decision model should have something to offer: 20 buttons,
+# six weapon slots, pickups everywhere, and reward that counts only kills. Writing
+# a good policy by hand here is genuinely awkward, which is the case distillation
+# needs -- a teacher only worth distilling if it beats hand-written rules.
+#
+# Three questions, not two. Latency is not the constraint during **lockstep**
+# harvesting, where the game does not advance while the model thinks, so the
+# teacher can be asked for its best decisions rather than its fastest ones.
+
+DEATHMATCH_MOVE = {
+    "type": "choice",
+    "instructions": (
+        "The player is in a deathmatch arena full of enemies and pickups. Only killing enemies "
+        "scores points. Choose how the player should move right now."
+    ),
+    "criteria": {
+        "advance": "No enemy needs dealing with right now, so move forward to find enemies and pickups",
+        "hold": "An enemy is centred in the crosshair, so stand still and shoot it",
+        "aim_left": "An enemy is visible to the left of the crosshair, so turn left to aim at it",
+        "aim_right": "An enemy is visible to the right of the crosshair, so turn right to aim at it",
+        "dodge_left": "An enemy is shooting at the player, so sidestep left to avoid the shots",
+        "dodge_right": "An enemy is shooting at the player, so sidestep right to avoid the shots",
+        "retreat": "The player is badly hurt and about to die, so back away from the enemies",
+    },
+}
+
+DEATHMATCH_WEAPON = {
+    "type": "choice",
+    "instructions": (
+        "Choose which weapon the player should be holding. A shotgun or chaingun is reliable at "
+        "most ranges, a rocket launcher hits hard but is dangerous up close, and a plasma rifle "
+        "is strong when there is plasma ammunition for it. Only switch when it is worth the "
+        "moment it costs, and never switch to a weapon the player has no ammunition for."
+    ),
+    "criteria": {
+        "keep": "The weapon already in hand is a reasonable choice, so do not switch",
+        "shotgun": "Switch to the shotgun, a dependable close and medium range weapon",
+        "chaingun": "Switch to the chaingun, good for sustained fire at medium range",
+        "rocket_launcher": "Switch to the rocket launcher for a distant or tough enemy, but not at close range",
+        "plasma_rifle": "Switch to the plasma rifle for heavy sustained damage",
+        "pistol": "Switch to the pistol, only if nothing better has ammunition",
+    },
+}
+
+DEATHMATCH_BATTERY: dict[str, dict] = {
+    "fire": FIRE_QUESTION,
+    "move": DEATHMATCH_MOVE,
+    "weapon": DEATHMATCH_WEAPON,
+}

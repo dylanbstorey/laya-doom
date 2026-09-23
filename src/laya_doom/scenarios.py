@@ -63,7 +63,25 @@ DEADLY_CORRIDOR = Scenario(
     notes="Reward is distance travelled; dying costs 100. Walking forward blindly scores ~+600.",
 )
 
-ALL = {scenario.name: scenario for scenario in (DEFEND_THE_CENTER, DEADLY_CORRIDOR)}
+DEATHMATCH = Scenario(
+    name="deathmatch",
+    battery=questions.DEATHMATCH_BATTERY,
+    # 6 tics (171 ms). Three questions cost more than two, and this map is the
+    # distillation target -- the teacher is harvested in lockstep, where inference
+    # costs no game time at all, so real-time cadence is not what it is tuned for.
+    interval_tics=6,
+    game_variables=[
+        vzd.GameVariable.HEALTH,
+        vzd.GameVariable.ARMOR,
+        vzd.GameVariable.KILLCOUNT,
+        vzd.GameVariable.SELECTED_WEAPON,
+        vzd.GameVariable.SELECTED_WEAPON_AMMO,
+        vzd.GameVariable.AMMO2,
+    ],
+    notes="Reward counts kills only. 20 buttons, six weapon slots, pickups everywhere.",
+)
+
+ALL = {scenario.name: scenario for scenario in (DEFEND_THE_CENTER, DEADLY_CORRIDOR, DEATHMATCH)}
 DEFAULT = DEFEND_THE_CENTER
 
 

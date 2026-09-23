@@ -44,6 +44,14 @@ ANSWER_BUTTONS: dict[str, str | None] = {
     "dodge_right": "MOVE_RIGHT",
     "retreat": "MOVE_BACKWARD",
     "stand": None,
+    # deathmatch weapon slots. Separate buttons, so a weapon switch combines with
+    # movement and firing in the same tick.
+    "keep": None,
+    "pistol": "SELECT_WEAPON2",
+    "shotgun": "SELECT_WEAPON3",
+    "chaingun": "SELECT_WEAPON4",
+    "rocket_launcher": "SELECT_WEAPON5",
+    "plasma_rifle": "SELECT_WEAPON6",
 }
 
 
@@ -80,18 +88,29 @@ def from_decision(
     *,
     fire_threshold: float = FIRE_THRESHOLD,
 ) -> list[int]:
-    """Translate a whole decision.
+    """Translate a whole decision into one button vector.
 
     ``fire`` is a ``noul``, so it arrives as P(true) and is thresholded. 0.5 is
     the honest default given the model reports calibrated probabilities -- the
     bench measured 94% specificity at this threshold.
+
+    Every *other* answer is a ``choice`` naming an action, and each resolves
+    through ANSWER_BUTTONS independently: deathmatch asks both where to move and
+    which weapon to hold, and those press different buttons in the same tick.
+    Answers whose button the current map does not expose are inert.
     """
+    action = neutral(buttons)
+    index = {name: position for position, name in enumerate(buttons)}
+
     fire_answer = decision.get("fire")
-    # `turn` in defend_the_center, `move` in deadly_corridor -- both name the single
-    # non-fire action for the tick, and both resolve through ANSWER_BUTTONS.
-    move_answer = decision.get("turn") or decision.get("move")
-    return from_answers(
-        buttons,
-        fire=bool(fire_answer and float(fire_answer.value) >= fire_threshold),
-        turn=str(move_answer.value) if move_answer else "hold",
-    )
+    if fire_answer is not None and float(fire_answer.value) >= fire_threshold:
+        if ATTACK_BUTTON in index:
+            action[index[ATTACK_BUTTON]] = 1
+
+    for name, answer in decision.answers.items():
+        if name == "fire" or answer.type != "choice":
+            continue
+        wanted = ANSWER_BUTTONS.get(str(answer.value))
+        if wanted and wanted in index:
+            action[index[wanted]] = 1
+    return action

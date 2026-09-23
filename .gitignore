@@ -12,3 +12,4 @@ bench/tuning.json
 # Metis keeps its plan in markdown; the database is a local cache.
 .metis/metis.db
 _vizdoom.ini
+data/

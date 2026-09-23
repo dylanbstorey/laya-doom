@@ -190,3 +190,67 @@ class RandomCorridorClient:
 
     def close(self) -> None:
         return None
+
+
+DEATHMATCH_MOVES = ("advance", "hold", "aim_left", "aim_right", "dodge_left", "dodge_right", "retreat")
+WEAPON_CHOICES = ("keep", "shotgun", "chaingun", "rocket_launcher", "plasma_rifle", "pistol")
+
+
+class DeathmatchScriptedClient:
+    """Reference policy for deathmatch -- the bar distillation has to clear.
+
+    Deliberately a decent hand-written policy rather than a strawman: shoot what
+    is lined up, turn toward what is not, back off when nearly dead, prefer a
+    chaingun and switch off a weapon that has run dry.
+    """
+
+    model = "scripted"
+
+    def __init__(self, retreat_health: float = 25.0) -> None:
+        self.retreat_health = retreat_health
+        self.calls = 0
+
+    def decide(self, state: dict, questions: dict[str, dict]) -> Decision:
+        started = time.perf_counter()
+        self.calls += 1
+
+        lined_up = bool(state.get("an_enemy_is_lined_up_with_your_crosshair"))
+        nearest = state.get("nearest_enemy")
+        health = float(state.get("health", 100))
+
+        if health <= self.retreat_health and nearest:
+            move = "retreat"
+        elif lined_up:
+            move = "hold"
+        elif nearest:
+            where = str(nearest.get("where", ""))
+            move = "aim_left" if "left" in where else "aim_right" if "right" in where else "advance"
+        else:
+            move = "advance"
+
+        # Switch only when the weapon in hand has run dry; otherwise hold the line.
+        shots = float(state.get("shots_left_for_this_weapon", 99))
+        holding = str(state.get("weapon_in_hand", ""))
+        if shots <= 0:
+            weapon = "shotgun"
+        elif "pistol" in holding or "fist" in holding:
+            weapon = "chaingun"
+        else:
+            weapon = "keep"
+
+        probability = 1.0 if lined_up else 0.0
+        return Decision(
+            answers={
+                "fire": Answer("fire", "noul", probability,
+                               {"true": probability, "false": 1 - probability}, 1.0),
+                "move": Answer("move", "choice", move,
+                               {o: 1.0 if o == move else 0.0 for o in DEATHMATCH_MOVES}, 1.0),
+                "weapon": Answer("weapon", "choice", weapon,
+                                 {o: 1.0 if o == weapon else 0.0 for o in WEAPON_CHOICES}, 1.0),
+            },
+            latency_ms=(time.perf_counter() - started) * 1000,
+            model=self.model,
+        )
+
+    def close(self) -> None:
+        return None

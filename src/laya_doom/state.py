@@ -39,6 +39,22 @@ MONSTER_PREFIXES = ("Marine",)
 
 PROJECTILES = frozenset({"DoomImpBall", "CacodemonBall", "BaronBall", "RevenantTracer", "ArachnotronPlasma", "Rocket"})
 
+# Pickups worth naming, by what they are for. deathmatch's label buffer is mostly
+# these -- RocketBox, ShellBox, CellPack, Medikit, Stimpack, ClipBox and weapons --
+# so a state that only describes monsters throws away most of what is on screen.
+HEALTH_ITEMS = frozenset({"Medikit", "Stimpack", "HealthBonus", "Soulsphere", "Megasphere"})
+ARMOR_ITEMS = frozenset({"GreenArmor", "BlueArmor", "ArmorBonus", "Megasphere"})
+AMMO_ITEMS = frozenset({"Clip", "ClipBox", "Shell", "ShellBox", "RocketAmmo", "RocketBox", "Cell", "CellPack"})
+WEAPON_ITEMS = frozenset({
+    "Shotgun", "SuperShotgun", "Chaingun", "RocketLauncher", "PlasmaRifle", "BFG9000", "Chainsaw",
+})
+
+# Doom's weapon slots, as SELECTED_WEAPON reports them.
+WEAPON_NAMES = {
+    1: "fist or chainsaw", 2: "pistol", 3: "shotgun", 4: "chaingun",
+    5: "rocket launcher", 6: "plasma rifle", 7: "BFG",
+}
+
 SELF = "DoomPlayer"
 
 # Plain words for the model. The checkpoint was trained on support tickets and
@@ -71,6 +87,19 @@ MAX_ENEMIES_DESCRIBED = 3
 # model commit to a shot slightly before the sweep is perfect, which matters
 # because the crosshair sits on an enemy in only ~6% of ticks.
 CROSSHAIR_TOLERANCE_PX = 0
+
+
+def item_kind(name: str) -> str | None:
+    """What a pickup is for, or None if it is not a pickup."""
+    if name in HEALTH_ITEMS:
+        return "health"
+    if name in ARMOR_ITEMS:
+        return "armor"
+    if name in AMMO_ITEMS:
+        return "ammunition"
+    if name in WEAPON_ITEMS:
+        return "weapon"
+    return None
 
 
 def is_monster(name: str) -> bool:
@@ -149,6 +178,18 @@ class Observation:
     # along it the player is. None on maps that are not going anywhere.
     progress: float | None = None
     distance_to_goal: float | None = None
+    # deathmatch only: armour, the weapon in hand, and what is lying around.
+    armor: float | None = None
+    weapon_slot: int | None = None
+    weapon_ammo: float | None = None
+    items: tuple[tuple[str, float], ...] = ()   # (kind, distance), nearest first
+
+    @property
+    def weapon_name(self) -> str:
+        return WEAPON_NAMES.get(int(self.weapon_slot or 0), "an unknown weapon")
+
+    def nearest_item(self, kind: str) -> float | None:
+        return next((distance for k, distance in self.items if k == kind), None)
 
     @property
     def nearest(self) -> EnemySighting | None:
@@ -204,6 +245,9 @@ def observe(
     tolerance_px: int = CROSSHAIR_TOLERANCE_PX,
     goal_x: float | None = None,
     position_x: float | None = None,
+    armor: float | None = None,
+    weapon_slot: int | None = None,
+    weapon_ammo: float | None = None,
 ) -> Observation:
     """Build an ``Observation`` from label dicts (live or recorded)."""
     labels = list(labels)
@@ -221,6 +265,15 @@ def observe(
     enemies.sort(key=lambda sighting: sighting.distance)
     projectiles = sum(1 for label in labels if label["name"] in PROJECTILES)
 
+    items = sorted(
+        (
+            (kind, math.dist((label["x"], label["y"]), player))
+            for label in labels
+            if (kind := item_kind(label["name"])) is not None
+        ),
+        key=lambda pair: pair[1],
+    )
+
     progress = distance_to_goal = None
     if goal_x is not None and position_x is not None and goal_x:
         progress = max(0.0, min(1.0, position_x / goal_x))
@@ -235,6 +288,10 @@ def observe(
         incoming_projectiles=projectiles,
         progress=progress,
         distance_to_goal=distance_to_goal,
+        armor=armor,
+        weapon_slot=weapon_slot,
+        weapon_ammo=weapon_ammo,
+        items=tuple(items[:6]),
     )
 
 
@@ -273,6 +330,9 @@ def from_game_state(
         tolerance_px=tolerance_px,
         goal_x=goal_x,
         position_x=variables.get("POSITION_X"),
+        armor=variables.get("ARMOR"),
+        weapon_slot=int(variables["SELECTED_WEAPON"]) if "SELECTED_WEAPON" in variables else None,
+        weapon_ammo=variables.get("SELECTED_WEAPON_AMMO"),
     )
 
 
@@ -316,6 +376,35 @@ def journey_phrase(observation: Observation) -> str:
         f"The green vest at the end of the corridor is {how_far}: you are "
         f"{observation.progress * 100:.0f}% of the way there."
     )
+
+
+def loadout_sentences(observation: Observation) -> list[str]:
+    """What the player is holding, and what is worth picking up.
+
+    Only says something when the map tracks weapons at all, so the other two
+    scenarios' state text is unchanged.
+    """
+    if observation.weapon_slot is None:
+        return []
+    said = [
+        f"You are holding the {observation.weapon_name} with "
+        f"{int(observation.weapon_ammo or 0)} shots left."
+    ]
+    if (observation.weapon_ammo or 0) <= 5:
+        distance = observation.nearest_item("ammunition")
+        said.append(
+            "You are nearly out of ammunition for it, and an ammunition pickup is nearby."
+            if distance is not None and distance < 400
+            else "You are nearly out of ammunition for it."
+        )
+    if observation.health <= 50:
+        distance = observation.nearest_item("health")
+        if distance is not None and distance < 400:
+            said.append("There is a health pickup nearby.")
+    distance = observation.nearest_item("weapon")
+    if distance is not None and distance < 250:
+        said.append("There is a better weapon lying close by.")
+    return said
 
 
 def narrate(observation: Observation) -> str:
@@ -371,6 +460,7 @@ def narrate(observation: Observation) -> str:
         sentences.append("You are badly hurt.")
     if observation.ammo <= 0:
         sentences.append("You are out of ammunition and cannot shoot.")
+    sentences.extend(loadout_sentences(observation))
     if journey:
         sentences.append(journey)
     return " ".join(sentences)
@@ -393,6 +483,15 @@ def serialize(observation: Observation) -> dict:
     }
     if observation.has_goal:
         state["percent_of_the_way_to_the_goal"] = round(observation.progress * 100)
+    if observation.weapon_slot is not None:
+        state["weapon_in_hand"] = observation.weapon_name
+        state["shots_left_for_this_weapon"] = int(observation.weapon_ammo or 0)
+    if observation.armor is not None:
+        state["armour"] = int(observation.armor)
+    for kind in ("health", "ammunition", "weapon"):
+        distance = observation.nearest_item(kind)
+        if distance is not None:
+            state[f"nearest_{kind}_pickup_distance"] = round(distance)
     if nearest is not None:
         state["nearest_enemy"] = {
             "what": plain_name(nearest.name),
