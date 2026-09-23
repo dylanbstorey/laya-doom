@@ -3,14 +3,22 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .DS_Store
+_vizdoom.ini
 
-# Recorded gameplay and scratch output
-captures/
+# Raw harvests are large and append-only; the gzipped copies are committed instead.
+data/*.jsonl
+# Superseded question batteries -- kept locally, not worth distributing.
+data/deathmatch_lockstep*.jsonl.gz
+models/checkpoint.npz
+
+# Raw bench output; the .md summaries beside them are what is worth reading.
 bench/results.json
 bench/tuning.json
+bench/corridor.json
+bench/gate.json
+
+# Recorded gameplay
+captures/
 
 # Metis keeps its plan in markdown; the database is a local cache.
 .metis/metis.db
-_vizdoom.ini
-data/
-models/

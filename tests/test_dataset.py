@@ -174,3 +174,34 @@ class TestStudentRoundTrip:
         client.decide(state, {})  # warm
         worst = max(client.decide(state, {}).latency_ms for _ in range(50))
         assert worst < 5.0, f"{worst:.2f} ms is too slow to decide every tic"
+
+
+class TestGzippedHarvests:
+    """The committed copy is gzipped -- 13x smaller, since rows repeat their keys
+    and most of their observation text. Loading must not care which form it gets."""
+
+    def test_a_gzipped_harvest_reads_identically(self, tmp_path):
+        import gzip
+
+        rows = [row(0, 7.0), row(0, 7.0), row(1, 2.0)]
+        plain = write(tmp_path, rows)
+        gz = tmp_path / "gzipped.jsonl.gz"
+        with gzip.open(gz, "wt") as sink:
+            for r in rows:
+                sink.write(json.dumps(r) + "\n")
+
+        assert describe(gz) == describe(plain)
+        assert len(load(gz)) == len(load(plain))
+
+    def test_a_missing_plain_file_falls_back_to_the_gzip(self, tmp_path):
+        import gzip
+
+        from laya_doom.dataset import resolve
+
+        gz = tmp_path / "harvest.jsonl.gz"
+        with gzip.open(gz, "wt") as sink:
+            sink.write(json.dumps(row(0, 5.0)) + "\n")
+
+        # A clean clone has only the .gz; asking for the .jsonl must still work.
+        assert resolve(tmp_path / "harvest.jsonl") == gz
+        assert len(load(tmp_path / "harvest.jsonl")) == 1

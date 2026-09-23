@@ -20,6 +20,7 @@ Two things this is strict about:
 
 from __future__ import annotations
 
+import gzip
 import json
 import statistics
 from collections import Counter
@@ -75,8 +76,25 @@ class Batch:
         )
 
 
+def resolve(path: Path) -> Path:
+    """Accept either the plain or the gzipped form of a harvest.
+
+    Harvesting appends plain JSONL because appending to a gzip stream is a
+    nuisance; the committed copy is gzipped because it compresses 13x -- the rows
+    repeat their keys and most of their observation text.
+    """
+    if path.exists():
+        return path
+    gzipped = path.with_suffix(path.suffix + ".gz")
+    if gzipped.exists():
+        return gzipped
+    return path
+
+
 def read(path: Path) -> Iterator[dict]:
-    with path.open() as handle:
+    path = resolve(path)
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, "rt") as handle:
         for line in handle:
             line = line.strip()
             if line:
