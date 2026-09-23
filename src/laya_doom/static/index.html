@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LAYA plays Doom</title>
+<link rel="stylesheet" href="/static/panel.css">
+</head>
+<body>
+<header>
+  <h1>LAYA plays <span class="doom">DOOM</span></h1>
+  <p class="tagline">
+    A 421M open-weights System 1 decision model in Doom's control loop.
+    It plays badly. The point is that it plays at all, at
+    <span id="rate">&mdash;</span> decisions/sec, on a laptop, for free.
+  </p>
+</header>
+
+<main>
+  <section class="viewport">
+    <canvas id="screen" width="320" height="240"></canvas>
+    <div class="hud">
+      <span class="stat"><label>health</label><b id="health">&mdash;</b></span>
+      <span class="stat"><label>ammo</label><b id="ammo">&mdash;</b></span>
+      <span class="stat"><label>kills</label><b id="kills">&mdash;</b></span>
+      <span class="stat"><label>tick</label><b id="tick">&mdash;</b></span>
+    </div>
+    <div class="keys" id="keys"></div>
+    <div class="controls">
+      <button id="start" class="primary">Start</button>
+      <button id="stop">Pause</button>
+      <button id="restart">Restart episode</button>
+      <select id="policy" title="All three read the same state at the same cadence">
+        <option value="laya">LAYA</option>
+        <option value="scripted">scripted baseline</option>
+        <option value="random">random baseline</option>
+      </select>
+    </div>
+    <p class="note" id="status">Not running.</p>
+  </section>
+
+  <section class="panel">
+    <h2>What the model was asked</h2>
+    <pre id="observation" class="observation">Waiting for the first tick&hellip;</pre>
+
+    <h2>What it answered <span class="hint">probabilities are the model's own, calibrated</span></h2>
+    <div id="answers" class="answers"></div>
+
+    <h2>Latency <span class="hint">client-side wall clock, includes HTTP</span></h2>
+    <div class="latency">
+      <span class="stat"><label>last</label><b id="lat-last">&mdash;</b></span>
+      <span class="stat"><label>p50</label><b id="lat-p50">&mdash;</b></span>
+      <span class="stat"><label>p95</label><b id="lat-p95">&mdash;</b></span>
+      <span class="stat"><label>budget</label><b id="lat-budget">&mdash;</b></span>
+    </div>
+    <div id="spark" class="spark"></div>
+
+    <h2>Episodes</h2>
+    <div class="latency">
+      <span class="stat"><label>episodes</label><b id="ep-count">0</b></span>
+      <span class="stat"><label>mean score</label><b id="ep-score">&mdash;</b></span>
+      <span class="stat"><label>skipped slots</label><b id="ep-skipped">&mdash;</b></span>
+      <span class="stat"><label>stale replies</label><b id="ep-stale">&mdash;</b></span>
+    </div>
+    <ul id="episodes" class="episodes"></ul>
+  </section>
+</main>
+
+<footer>
+  <p>
+    Doom runs in <a href="https://github.com/Farama-Foundation/ViZDoom">ViZDoom</a>.
+    Decisions come from <a href="https://huggingface.co/convaiinnovations/laya-typed-decisions">LAYA
+    typed-decisions</a> (Apache&nbsp;2.0) served by
+    <a href="https://github.com/afshinm/laya-mps">laya-mps</a> (MIT) on Apple Silicon.
+    After TypeSafe's Jev&nbsp;&times;&nbsp;Doom demo.
+  </p>
+  <p class="caveat">
+    Python computes the observation &mdash; bearing, distance, whether the crosshair is on
+    an enemy. The model chooses the action. A scripted policy reading the same state beats it;
+    switch the dropdown to see by how much.
+  </p>
+</footer>
+
+<script type="module" src="/static/panel.js"></script>
+</body>
+</html>

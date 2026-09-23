@@ -1,0 +1,1220 @@
+[
+ {
+  "scenario": "health_gathering",
+  "tick": 0,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 92.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 1034.6438903808594,
+    "y": 427.5008239746094,
+    "z": 20.0,
+    "bbox": [
+     222,
+     120,
+     10,
+     8
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 901.7306823730469,
+    "y": 884.272216796875,
+    "z": 20.0,
+    "bbox": [
+     1,
+     120,
+     15,
+     12
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 1182.7956085205078,
+    "y": 818.521484375,
+    "z": 20.0,
+    "bbox": [
+     97,
+     120,
+     7,
+     6
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 1093.088851928711,
+    "y": 822.3335723876953,
+    "z": 20.0,
+    "bbox": [
+     84,
+     120,
+     9,
+     7
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 1179.6190795898438,
+    "y": 396.6317901611328,
+    "z": 20.0,
+    "bbox": [
+     215,
+     120,
+     7,
+     6
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 851.0849761962891,
+    "y": 478.5231170654297,
+    "z": 20.0,
+    "bbox": [
+     236,
+     120,
+     18,
+     15
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 1162.428451538086,
+    "y": 621.8344268798828,
+    "z": 20.0,
+    "bbox": [
+     151,
+     120,
+     8,
+     6
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 8,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 84.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 901.7306823730469,
+    "y": 884.272216796875,
+    "z": 0.0,
+    "bbox": [
+     165,
+     131,
+     12,
+     10
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 753.1165924072266,
+    "y": 838.8489379882812,
+    "z": 0.0,
+    "bbox": [
+     105,
+     137,
+     19,
+     16
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 792.6172790527344,
+    "y": 873.6176300048828,
+    "z": 0.0,
+    "bbox": [
+     121,
+     134,
+     15,
+     13
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 832.2644653320312,
+    "y": 909.4018249511719,
+    "z": 0.0,
+    "bbox": [
+     131,
+     132,
+     13,
+     10
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 1182.7956085205078,
+    "y": 818.521484375,
+    "z": 0.0,
+    "bbox": [
+     253,
+     128,
+     9,
+     7
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 1093.088851928711,
+    "y": 822.3335723876953,
+    "z": 0.0,
+    "bbox": [
+     236,
+     129,
+     10,
+     8
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 16,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 76.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 901.7306823730469,
+    "y": 884.272216796875,
+    "z": 0.0,
+    "bbox": [
+     196,
+     140,
+     20,
+     17
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 753.1165924072266,
+    "y": 838.8489379882812,
+    "z": 0.0,
+    "bbox": [
+     69,
+     163,
+     45,
+     37
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 792.6172790527344,
+    "y": 873.6176300048828,
+    "z": 0.0,
+    "bbox": [
+     117,
+     148,
+     30,
+     25
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 832.2644653320312,
+    "y": 909.4018249511719,
+    "z": 0.0,
+    "bbox": [
+     140,
+     141,
+     22,
+     18
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 1093.088851928711,
+    "y": 822.3335723876953,
+    "z": 0.0,
+    "bbox": [
+     312,
+     136,
+     7,
+     14
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 24,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 68.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 569.6719970703125,
+    "y": 966.3807525634766,
+    "z": 0.0,
+    "bbox": [
+     157,
+     135,
+     19,
+     15
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 59.94879150390625,
+    "y": 1061.8208770751953,
+    "z": 0.0,
+    "bbox": [
+     89,
+     125,
+     6,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 32,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 85.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 569.6719970703125,
+    "y": 966.3807525634766,
+    "z": 0.0,
+    "bbox": [
+     206,
+     179,
+     65,
+     54
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 59.94879150390625,
+    "y": 1061.8208770751953,
+    "z": 0.0,
+    "bbox": [
+     110,
+     127,
+     7,
+     6
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 40,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 92.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 456.54493713378906,
+    "y": 1174.7738189697266,
+    "z": 0.0,
+    "bbox": [
+     213,
+     137,
+     20,
+     17
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 59.94879150390625,
+    "y": 1061.8208770751953,
+    "z": 0.0,
+    "bbox": [
+     48,
+     129,
+     10,
+     8
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 48,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 84.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 59.94879150390625,
+    "y": 1061.8208770751953,
+    "z": 0.0,
+    "bbox": [
+     138,
+     128,
+     9,
+     7
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 56,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 76.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 456.54493713378906,
+    "y": 1174.7738189697266,
+    "z": 0.0,
+    "bbox": [
+     239,
+     148,
+     29,
+     24
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 59.94879150390625,
+    "y": 1061.8208770751953,
+    "z": 0.0,
+    "bbox": [
+     19,
+     133,
+     13,
+     10
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 64,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 68.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 72,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 60.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 80,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 52.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 88,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 44.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 96,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 36.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 104,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 28.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 112,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 20.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 120,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 12.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 128,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 4.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 136,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 92.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 1171.442886352539,
+    "y": 881.223876953125,
+    "z": 20.0,
+    "bbox": [
+     78,
+     120,
+     7,
+     6
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 918.10302734375,
+    "y": 284.11830139160156,
+    "z": 20.0,
+    "bbox": [
+     319,
+     123,
+     0,
+     7
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 790.8658599853516,
+    "y": 575.5653228759766,
+    "z": 20.0,
+    "bbox": [
+     176,
+     121,
+     24,
+     20
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 668.1227264404297,
+    "y": 593.4419860839844,
+    "z": 20.0,
+    "bbox": [
+     161,
+     123,
+     76,
+     63
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 144,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 92.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 1171.442886352539,
+    "y": 881.223876953125,
+    "z": 0.0,
+    "bbox": [
+     235,
+     127,
+     8,
+     6
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 655.0022430419922,
+    "y": 1016.4038696289062,
+    "z": 0.0,
+    "bbox": [
+     44,
+     132,
+     13,
+     10
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 152,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 84.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 1171.442886352539,
+    "y": 881.223876953125,
+    "z": 0.0,
+    "bbox": [
+     294,
+     130,
+     10,
+     8
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 655.0022430419922,
+    "y": 1016.4038696289062,
+    "z": 0.0,
+    "bbox": [
+     57,
+     134,
+     15,
+     13
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 160,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 76.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 869.6675720214844,
+    "y": 948.4266815185547,
+    "z": 0.0,
+    "bbox": [
+     110,
+     136,
+     21,
+     17
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 1171.442886352539,
+    "y": 881.223876953125,
+    "z": 0.0,
+    "bbox": [
+     231,
+     128,
+     11,
+     9
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 168,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 68.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 869.6675720214844,
+    "y": 948.4266815185547,
+    "z": 0.0,
+    "bbox": [
+     24,
+     184,
+     71,
+     55
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 1171.442886352539,
+    "y": 881.223876953125,
+    "z": 0.0,
+    "bbox": [
+     306,
+     138,
+     13,
+     16
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 176,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 60.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 1171.442886352539,
+    "y": 881.223876953125,
+    "z": 0.0,
+    "bbox": [
+     245,
+     137,
+     19,
+     15
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 184,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 52.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 192,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 44.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 200,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 36.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 208,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 28.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 216,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 20.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 224,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 12.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 232,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 4.0
+  },
+  "labels": []
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 240,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 92.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 1111.6329193115234,
+    "y": 548.2992706298828,
+    "z": 20.0,
+    "bbox": [
+     174,
+     120,
+     8,
+     7
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 631.2698059082031,
+    "y": 584.3690032958984,
+    "z": 20.0,
+    "bbox": [
+     226,
+     128,
+     93,
+     111
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 922.2213745117188,
+    "y": 927.295654296875,
+    "z": 20.0,
+    "bbox": [
+     0,
+     120,
+     4,
+     11
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 1163.1632537841797,
+    "y": 823.4609375,
+    "z": 20.0,
+    "bbox": [
+     93,
+     120,
+     8,
+     6
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 846.8445434570312,
+    "y": 571.4829711914062,
+    "z": 20.0,
+    "bbox": [
+     175,
+     120,
+     18,
+     15
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 248,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 92.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 867.7283020019531,
+    "y": 1190.234115600586,
+    "z": 0.0,
+    "bbox": [
+     56,
+     127,
+     8,
+     6
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 736.9043273925781,
+    "y": 1088.994857788086,
+    "z": 0.0,
+    "bbox": [
+     2,
+     130,
+     13,
+     11
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 922.2213745117188,
+    "y": 927.295654296875,
+    "z": 0.0,
+    "bbox": [
+     121,
+     129,
+     11,
+     10
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 1163.1632537841797,
+    "y": 823.4609375,
+    "z": 0.0,
+    "bbox": [
+     207,
+     127,
+     8,
+     7
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 850.275146484375,
+    "y": 1042.4250793457031,
+    "z": 0.0,
+    "bbox": [
+     69,
+     129,
+     10,
+     9
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 256,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 84.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 390.82310485839844,
+    "y": 1073.4593353271484,
+    "z": 0.0,
+    "bbox": [
+     44,
+     129,
+     10,
+     8
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 867.7283020019531,
+    "y": 1190.234115600586,
+    "z": 0.0,
+    "bbox": [
+     214,
+     128,
+     9,
+     6
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 736.9043273925781,
+    "y": 1088.994857788086,
+    "z": 0.0,
+    "bbox": [
+     173,
+     129,
+     10,
+     9
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 922.2213745117188,
+    "y": 927.295654296875,
+    "z": 0.0,
+    "bbox": [
+     297,
+     137,
+     18,
+     15
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 850.275146484375,
+    "y": 1042.4250793457031,
+    "z": 0.0,
+    "bbox": [
+     223,
+     131,
+     12,
+     10
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 264,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 76.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 390.82310485839844,
+    "y": 1073.4593353271484,
+    "z": 0.0,
+    "bbox": [
+     4,
+     129,
+     13,
+     11
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 867.7283020019531,
+    "y": 1190.234115600586,
+    "z": 0.0,
+    "bbox": [
+     222,
+     128,
+     10,
+     8
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 736.9043273925781,
+    "y": 1088.994857788086,
+    "z": 0.0,
+    "bbox": [
+     170,
+     130,
+     14,
+     11
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 850.275146484375,
+    "y": 1042.4250793457031,
+    "z": 0.0,
+    "bbox": [
+     238,
+     132,
+     17,
+     13
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 272,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 68.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 390.82310485839844,
+    "y": 1073.4593353271484,
+    "z": 0.0,
+    "bbox": [
+     53,
+     131,
+     13,
+     11
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 736.9043273925781,
+    "y": 1088.994857788086,
+    "z": 0.0,
+    "bbox": [
+     232,
+     139,
+     21,
+     17
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 280,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 60.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 867.7283020019531,
+    "y": 1190.234115600586,
+    "z": 0.0,
+    "bbox": [
+     143,
+     132,
+     13,
+     10
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 736.9043273925781,
+    "y": 1088.994857788086,
+    "z": 0.0,
+    "bbox": [
+     72,
+     142,
+     25,
+     21
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 850.275146484375,
+    "y": 1042.4250793457031,
+    "z": 0.0,
+    "bbox": [
+     180,
+     140,
+     23,
+     19
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 288,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 52.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 867.7283020019531,
+    "y": 1190.234115600586,
+    "z": 0.0,
+    "bbox": [
+     128,
+     139,
+     22,
+     18
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 850.275146484375,
+    "y": 1042.4250793457031,
+    "z": 0.0,
+    "bbox": [
+     215,
+     177,
+     68,
+     56
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "health_gathering",
+  "tick": 296,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "HEALTH": 44.0
+  },
+  "labels": [
+   {
+    "name": "Medikit",
+    "x": 867.7283020019531,
+    "y": 1190.234115600586,
+    "z": 0.0,
+    "bbox": [
+     298,
+     154,
+     21,
+     33
+    ]
+   },
+   {
+    "name": "Medikit",
+    "x": 736.9043273925781,
+    "y": 1088.994857788086,
+    "z": 0.0,
+    "bbox": [
+     0,
+     203,
+     88,
+     36
+    ]
+   }
+  ]
+ }
+]

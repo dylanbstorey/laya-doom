@@ -1,0 +1,1993 @@
+[
+ {
+  "scenario": "defend_the_line",
+  "tick": 0,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 79.0,
+   "HEALTH": 100.0
+  },
+  "labels": [
+   {
+    "name": "Demon",
+    "x": 74.0,
+    "y": 450.0,
+    "z": 0.0,
+    "bbox": [
+     105,
+     115,
+     14,
+     19
+    ],
+    "distance": 577.2
+   },
+   {
+    "name": "Demon",
+    "x": 56.928924560546875,
+    "y": 292.9289245605469,
+    "z": 0.0,
+    "bbox": [
+     150,
+     115,
+     15,
+     19
+    ],
+    "distance": 537.0
+   },
+   {
+    "name": "Demon",
+    "x": 74.0,
+    "y": 150.0,
+    "z": 0.0,
+    "bbox": [
+     191,
+     115,
+     15,
+     19
+    ],
+    "distance": 570.9
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 400.0,
+    "z": 0.0,
+    "bbox": [
+     119,
+     114,
+     12,
+     20
+    ],
+    "distance": 555.4
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 200.0,
+    "z": 0.0,
+    "bbox": [
+     178,
+     114,
+     12,
+     20
+    ],
+    "distance": 551.1
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 90.0,
+    "z": 0.0,
+    "bbox": [
+     210,
+     114,
+     12,
+     20
+    ],
+    "distance": 578.9
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -480.0,
+    "y": 288.0,
+    "z": 0.0,
+    "bbox": [
+     138,
+     190,
+     47,
+     49
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 8,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 110.0,
+   "HEALTH": 100.0
+  },
+  "labels": [
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 400.0,
+    "z": 0.0,
+    "bbox": [
+     292,
+     112,
+     15,
+     27
+    ],
+    "distance": 555.4
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -480.0,
+    "y": 288.0,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 16,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 140.0,
+   "HEALTH": 100.0
+  },
+  "labels": [
+   {
+    "name": "DoomPlayer",
+    "x": -480.0,
+    "y": 288.0,
+    "z": 0.0,
+    "bbox": [
+     134,
+     137,
+     62,
+     102
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 24,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 171.0,
+   "HEALTH": 100.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -509.5301818847656,
+    "y": 325.3414611816406,
+    "z": 43.015625,
+    "bbox": [
+     156,
+     75,
+     49,
+     56
+    ],
+    "distance": 47.6
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -480.0,
+    "y": 288.0,
+    "z": 0.0,
+    "bbox": [
+     134,
+     143,
+     56,
+     96
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 32,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 100.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -508.91859436035156,
+    "y": 312.0466766357422,
+    "z": 47.90625,
+    "bbox": [
+     146,
+     32,
+     72,
+     77
+    ],
+    "distance": 37.6
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -480.0,
+    "y": 288.0,
+    "z": 0.0,
+    "bbox": [
+     134,
+     137,
+     62,
+     102
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 40,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 94.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -508.70123291015625,
+    "y": 305.64454650878906,
+    "z": 37.08221435546875,
+    "bbox": [
+     97,
+     87,
+     78,
+     88
+    ],
+    "distance": 30.7
+   },
+   {
+    "name": "Demon",
+    "x": -478.13226318359375,
+    "y": 337.57354736328125,
+    "z": 0.0,
+    "bbox": [
+     265,
+     36,
+     54,
+     190
+    ],
+    "distance": 50.8
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -484.2705535888672,
+    "y": 287.1228790283203,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 48,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 70.0
+  },
+  "labels": [
+   {
+    "name": "DoomPlayer",
+    "x": -492.10621643066406,
+    "y": 257.2313232421875,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 56,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 70.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -509.1146240234375,
+    "y": 271.58042907714844,
+    "z": 41.296875,
+    "bbox": [
+     101,
+     43,
+     102,
+     114
+    ],
+    "distance": 23.2
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -492.51153564453125,
+    "y": 255.3179168701172,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 64,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 70.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -509.4813232421875,
+    "y": 275.9828796386719,
+    "z": 37.609375,
+    "bbox": [
+     116,
+     86,
+     71,
+     78
+    ],
+    "distance": 26.7
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -492.51153564453125,
+    "y": 255.3179168701172,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 72,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 70.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -508.26490783691406,
+    "y": 260.6174774169922,
+    "z": 42.140625,
+    "bbox": [
+     51,
+     0,
+     148,
+     164
+    ],
+    "distance": 16.6
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -492.51153564453125,
+    "y": 255.3179168701172,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 80,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 58.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -508.6937713623047,
+    "y": 262.4507751464844,
+    "z": 39.0625,
+    "bbox": [
+     83,
+     44,
+     124,
+     136
+    ],
+    "distance": 15.4
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.96275329589844,
+    "y": 253.71144104003906,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 88,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 58.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -509.05889892578125,
+    "y": 265.86712646484375,
+    "z": 46.65625,
+    "bbox": [
+     73,
+     0,
+     152,
+     111
+    ],
+    "distance": 17.9
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.96275329589844,
+    "y": 253.71144104003906,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 96,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 46.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -508.5615692138672,
+    "y": 261.38526916503906,
+    "z": 37.328125,
+    "bbox": [
+     106,
+     63,
+     130,
+     143
+    ],
+    "distance": 14.7
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.96275329589844,
+    "y": 253.72488403320312,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 104,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 40.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -509.8002166748047,
+    "y": 274.98402404785156,
+    "z": 47.546875,
+    "bbox": [
+     127,
+     0,
+     108,
+     107
+    ],
+    "distance": 25.2
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.97752380371094,
+    "y": 253.92880249023438,
+    "z": 0.0,
+    "bbox": [
+     134,
+     137,
+     62,
+     102
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 112,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 40.0
+  },
+  "labels": [
+   {
+    "name": "DoomPlayer",
+    "x": -495.97752380371094,
+    "y": 255.26571655273438,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 120,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 40.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -508.65025329589844,
+    "y": 263.2809295654297,
+    "z": 38.015625,
+    "bbox": [
+     138,
+     119,
+     53,
+     63
+    ],
+    "distance": 15.0
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.97752380371094,
+    "y": 255.26571655273438,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 128,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 28.0
+  },
+  "labels": [
+   {
+    "name": "DoomPlayer",
+    "x": -495.97752380371094,
+    "y": 255.26571655273438,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 136,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 28.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -508.65025329589844,
+    "y": 267.03981018066406,
+    "z": 47.03125,
+    "bbox": [
+     30,
+     0,
+     187,
+     105
+    ],
+    "distance": 14.9
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.97752380371094,
+    "y": 259.14683532714844,
+    "z": 0.0,
+    "bbox": [
+     134,
+     137,
+     62,
+     102
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 144,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 28.0
+  },
+  "labels": [
+   {
+    "name": "DoomPlayer",
+    "x": -495.97752380371094,
+    "y": 259.14683532714844,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 152,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 83.0,
+   "HEALTH": 100.0
+  },
+  "labels": [
+   {
+    "name": "Demon",
+    "x": 94.0,
+    "y": 450.0,
+    "z": 0.0,
+    "bbox": [
+     86,
+     116,
+     13,
+     19
+    ],
+    "distance": 596.4
+   },
+   {
+    "name": "Demon",
+    "x": 36.928924560546875,
+    "y": 292.9289245605469,
+    "z": 0.0,
+    "bbox": [
+     134,
+     114,
+     9,
+     21
+    ],
+    "distance": 517.0
+   },
+   {
+    "name": "Demon",
+    "x": 94.0,
+    "y": 150.0,
+    "z": 0.0,
+    "bbox": [
+     172,
+     116,
+     12,
+     18
+    ],
+    "distance": 590.4
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 400.0,
+    "z": 0.0,
+    "bbox": [
+     98,
+     114,
+     12,
+     21
+    ],
+    "distance": 555.4
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 200.0,
+    "z": 0.0,
+    "bbox": [
+     159,
+     114,
+     13,
+     20
+    ],
+    "distance": 551.1
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 90.0,
+    "z": 0.0,
+    "bbox": [
+     190,
+     114,
+     13,
+     20
+    ],
+    "distance": 578.9
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -480.0,
+    "y": 288.0,
+    "z": 0.0,
+    "bbox": [
+     135,
+     162,
+     53,
+     77
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 160,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 113.0,
+   "HEALTH": 100.0
+  },
+  "labels": [
+   {
+    "name": "Demon",
+    "x": -24.2843017578125,
+    "y": 451.7156982421875,
+    "z": 0.0,
+    "bbox": [
+     0,
+     125,
+     0,
+     10
+    ],
+    "distance": 484.2
+   },
+   {
+    "name": "Demon",
+    "x": -123.07107543945312,
+    "y": 292.9289245605469,
+    "z": 0.0,
+    "bbox": [
+     69,
+     110,
+     16,
+     35
+    ],
+    "distance": 357.0
+   },
+   {
+    "name": "Demon",
+    "x": -45.497528076171875,
+    "y": 185.35537719726562,
+    "z": 0.0,
+    "bbox": [
+     114,
+     113,
+     16,
+     25
+    ],
+    "distance": 446.5
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 400.0,
+    "z": 0.0,
+    "bbox": [
+     28,
+     112,
+     12,
+     26
+    ],
+    "distance": 555.4
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 200.0,
+    "z": 0.0,
+    "bbox": [
+     105,
+     114,
+     11,
+     21
+    ],
+    "distance": 551.1
+   },
+   {
+    "name": "BulletPuff",
+    "x": -31.009262084960938,
+    "y": 65.79093933105469,
+    "z": 40.09375,
+    "bbox": [
+     158,
+     117,
+     2,
+     3
+    ],
+    "distance": 501.0
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -480.0,
+    "y": 288.0,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 168,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 144.0,
+   "HEALTH": 100.0
+  },
+  "labels": [
+   {
+    "name": "Demon",
+    "x": -157.92398071289062,
+    "y": 388.0760192871094,
+    "z": 0.0,
+    "bbox": [
+     19,
+     109,
+     29,
+     41
+    ],
+    "distance": 337.3
+   },
+   {
+    "name": "Demon",
+    "x": -283.0710754394531,
+    "y": 292.9289245605469,
+    "z": 0.0,
+    "bbox": [
+     78,
+     104,
+     29,
+     61
+    ],
+    "distance": 197.0
+   },
+   {
+    "name": "Demon",
+    "x": -158.63473510742188,
+    "y": 298.4925842285156,
+    "z": 0.0,
+    "bbox": [
+     79,
+     110,
+     25,
+     37
+    ],
+    "distance": 321.5
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 400.0,
+    "z": 0.0,
+    "bbox": [
+     50,
+     113,
+     13,
+     24
+    ],
+    "distance": 555.4
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 200.0,
+    "z": 0.0,
+    "bbox": [
+     120,
+     113,
+     11,
+     22
+    ],
+    "distance": 551.1
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -480.0,
+    "y": 288.0,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 176,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 175.0,
+   "HEALTH": 100.0
+  },
+  "labels": [
+   {
+    "name": "Demon",
+    "x": -276.9190368652344,
+    "y": 289.0809631347656,
+    "z": 0.0,
+    "bbox": [
+     0,
+     100,
+     30,
+     75
+    ],
+    "distance": 203.1
+   },
+   {
+    "name": "Demon",
+    "x": -277.6297912597656,
+    "y": 227.78182983398438,
+    "z": 0.0,
+    "bbox": [
+     69,
+     104,
+     27,
+     59
+    ],
+    "distance": 211.1
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 200.0,
+    "z": 0.0,
+    "bbox": [
+     50,
+     113,
+     14,
+     24
+    ],
+    "distance": 551.1
+   },
+   {
+    "name": "Demon",
+    "x": -423.0710754394531,
+    "y": 292.9289245605469,
+    "z": 0.0,
+    "bbox": [
+     0,
+     65,
+     52,
+     174
+    ],
+    "distance": 57.1
+   },
+   {
+    "name": "BulletPuff",
+    "x": -164.8224639892578,
+    "y": 66.26808166503906,
+    "z": 42.625,
+    "bbox": [
+     137,
+     114,
+     5,
+     6
+    ],
+    "distance": 385.4
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -480.0,
+    "y": 288.0,
+    "z": 0.0,
+    "bbox": [
+     134,
+     143,
+     56,
+     96
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 184,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 100.0
+  },
+  "labels": [
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 200.0,
+    "z": 0.0,
+    "bbox": [
+     76,
+     113,
+     12,
+     23
+    ],
+    "distance": 551.1
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 90.0,
+    "z": 0.0,
+    "bbox": [
+     111,
+     114,
+     10,
+     20
+    ],
+    "distance": 578.9
+   },
+   {
+    "name": "Demon",
+    "x": -426.9190368652344,
+    "y": 289.0809631347656,
+    "z": 0.0,
+    "bbox": [
+     0,
+     61,
+     101,
+     178
+    ],
+    "distance": 53.1
+   },
+   {
+    "name": "Blood",
+    "x": -407.63865661621094,
+    "y": 248.30001831054688,
+    "z": 0.0,
+    "bbox": [
+     126,
+     204,
+     32,
+     18
+    ],
+    "distance": 82.5
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -480.0,
+    "y": 288.0,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 192,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 97.0
+  },
+  "labels": [
+   {
+    "name": "DoomImpBall",
+    "x": -126.99412536621094,
+    "y": 360.67774963378906,
+    "z": 32.0,
+    "bbox": [
+     96,
+     117,
+     6,
+     9
+    ],
+    "distance": 363.2
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 400.0,
+    "z": 0.0,
+    "bbox": [
+     95,
+     114,
+     10,
+     21
+    ],
+    "distance": 558.2
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 90.0,
+    "z": 0.0,
+    "bbox": [
+     186,
+     114,
+     11,
+     20
+    ],
+    "distance": 581.3
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 200.0,
+    "z": 0.0,
+    "bbox": [
+     155,
+     114,
+     10,
+     20
+    ],
+    "distance": 553.7
+   },
+   {
+    "name": "BulletPuff",
+    "x": 124.17750549316406,
+    "y": 116.64215087890625,
+    "z": 34.219268798828125,
+    "bbox": [
+     177,
+     119,
+     3,
+     3
+    ],
+    "distance": 630.5
+   },
+   {
+    "name": "DoomImpBall",
+    "x": -455.11224365234375,
+    "y": 293.12416076660156,
+    "z": 32.0,
+    "bbox": [
+     0,
+     0,
+     244,
+     239
+    ],
+    "distance": 28.2
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -482.7156677246094,
+    "y": 287.4420623779297,
+    "z": 0.0,
+    "bbox": [
+     134,
+     143,
+     56,
+     96
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 200,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 97.0
+  },
+  "labels": [
+   {
+    "name": "DoomImpBall",
+    "x": -440.42039489746094,
+    "y": 296.14894104003906,
+    "z": 32.0,
+    "bbox": [
+     50,
+     109,
+     60,
+     73
+    ],
+    "distance": 43.9
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 90.0,
+    "z": 0.0,
+    "bbox": [
+     171,
+     114,
+     10,
+     19
+    ],
+    "distance": 581.8
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 200.0,
+    "z": 0.0,
+    "bbox": [
+     141,
+     114,
+     11,
+     20
+    ],
+    "distance": 554.3
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 400.0,
+    "z": 0.0,
+    "bbox": [
+     77,
+     113,
+     11,
+     23
+    ],
+    "distance": 558.9
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -483.3714599609375,
+    "y": 287.30714416503906,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 208,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 91.0
+  },
+  "labels": [
+   {
+    "name": "DoomImpBall",
+    "x": -68.22669982910156,
+    "y": 372.77793884277344,
+    "z": 32.0,
+    "bbox": [
+     238,
+     117,
+     5,
+     8
+    ],
+    "distance": 431.3
+   },
+   {
+    "name": "Demon",
+    "x": -20.8529052734375,
+    "y": 243.431396484375,
+    "z": 0.0,
+    "bbox": [
+     305,
+     111,
+     14,
+     32
+    ],
+    "distance": 471.7
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 400.0,
+    "z": 0.0,
+    "bbox": [
+     235,
+     113,
+     13,
+     23
+    ],
+    "distance": 566.3
+   },
+   {
+    "name": "Demon",
+    "x": 64.0,
+    "y": 450.0,
+    "z": 0.0,
+    "bbox": [
+     220,
+     114,
+     10,
+     21
+    ],
+    "distance": 578.5
+   },
+   {
+    "name": "BulletPuff",
+    "x": -33.54359436035156,
+    "y": 510.2223358154297,
+    "z": 42.71875,
+    "bbox": [
+     193,
+     115,
+     4,
+     4
+    ],
+    "distance": 509.2
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -490.6588134765625,
+    "y": 285.8095397949219,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 216,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 91.0
+  },
+  "labels": [
+   {
+    "name": "Demon",
+    "x": 25.7156982421875,
+    "y": 451.7156982421875,
+    "z": 0.0,
+    "bbox": [
+     238,
+     114,
+     12,
+     23
+    ],
+    "distance": 542.4
+   },
+   {
+    "name": "DoomImpBall",
+    "x": -381.65296936035156,
+    "y": 308.25157165527344,
+    "z": 32.0,
+    "bbox": [
+     254,
+     114,
+     25,
+     32
+    ],
+    "distance": 111.3
+   },
+   {
+    "name": "Demon",
+    "x": -151.56365966796875,
+    "y": 285.85784912109375,
+    "z": 0.0,
+    "bbox": [
+     312,
+     110,
+     7,
+     43
+    ],
+    "distance": 339.1
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 400.0,
+    "z": 0.0,
+    "bbox": [
+     261,
+     113,
+     12,
+     24
+    ],
+    "distance": 566.3
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -490.6588134765625,
+    "y": 285.8095397949219,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 224,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 82.0
+  },
+  "labels": [
+   {
+    "name": "Demon",
+    "x": -113.78182983398438,
+    "y": 402.2181701660156,
+    "z": 0.0,
+    "bbox": [
+     287,
+     112,
+     22,
+     36
+    ],
+    "distance": 400.0
+   },
+   {
+    "name": "BulletPuff",
+    "x": -314.03448486328125,
+    "y": 508.87269592285156,
+    "z": 44.046875,
+    "bbox": [
+     175,
+     111,
+     8,
+     9
+    ],
+    "distance": 289.1
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.9809265136719,
+    "y": 284.15843200683594,
+    "z": 0.0,
+    "bbox": [
+     134,
+     143,
+     56,
+     96
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 232,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 82.0
+  },
+  "labels": [
+   {
+    "name": "DoomImpBall",
+    "x": -58.408111572265625,
+    "y": 374.6778564453125,
+    "z": 32.0,
+    "bbox": [
+     178,
+     118,
+     5,
+     6
+    ],
+    "distance": 446.8
+   },
+   {
+    "name": "DoomImpBall",
+    "x": -118.94522094726562,
+    "y": 227.49424743652344,
+    "z": 32.0,
+    "bbox": [
+     240,
+     117,
+     6,
+     9
+    ],
+    "distance": 381.3
+   },
+   {
+    "name": "DoomImpBall",
+    "x": -299.75555419921875,
+    "y": 216.1225128173828,
+    "z": 32.0,
+    "bbox": [
+     279,
+     116,
+     13,
+     18
+    ],
+    "distance": 207.7
+   },
+   {
+    "name": "Demon",
+    "x": -226.91903686523438,
+    "y": 289.0809631347656,
+    "z": 0.0,
+    "bbox": [
+     200,
+     110,
+     26,
+     43
+    ],
+    "distance": 269.1
+   },
+   {
+    "name": "Demon",
+    "x": -337.4215087890625,
+    "y": 281.4215087890625,
+    "z": 0.0,
+    "bbox": [
+     199,
+     101,
+     40,
+     76
+    ],
+    "distance": 158.6
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 400.0,
+    "z": 0.0,
+    "bbox": [
+     174,
+     114,
+     11,
+     20
+    ],
+    "distance": 571.8
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 200.0,
+    "z": 0.0,
+    "bbox": [
+     237,
+     113,
+     13,
+     23
+    ],
+    "distance": 566.3
+   },
+   {
+    "name": "DoomImp",
+    "x": 64.0,
+    "y": 90.0,
+    "z": 0.0,
+    "bbox": [
+     282,
+     112,
+     9,
+     25
+    ],
+    "distance": 592.7
+   },
+   {
+    "name": "Demon",
+    "x": -441.56365966796875,
+    "y": 285.85784912109375,
+    "z": 0.0,
+    "bbox": [
+     152,
+     71,
+     107,
+     168
+    ],
+    "distance": 54.4
+   },
+   {
+    "name": "BulletPuff",
+    "x": -231.36880493164062,
+    "y": 509.3911590576172,
+    "z": 48.59375,
+    "bbox": [
+     94,
+     109,
+     7,
+     8
+    ],
+    "distance": 347.5
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.9809265136719,
+    "y": 284.15843200683594,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 240,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 82.0
+  },
+  "labels": [
+   {
+    "name": "DoomPlayer",
+    "x": -495.9809265136719,
+    "y": 284.15843200683594,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 248,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 70.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -510.63340759277344,
+    "y": 322.1156311035156,
+    "z": 38.78125,
+    "bbox": [
+     130,
+     94,
+     43,
+     48
+    ],
+    "distance": 43.1
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.9809265136719,
+    "y": 281.5681610107422,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 256,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 49.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -508.3560028076172,
+    "y": 292.7779083251953,
+    "z": 40.578125,
+    "bbox": [
+     99,
+     11,
+     143,
+     157
+    ],
+    "distance": 13.4
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.9809265136719,
+    "y": 287.66705322265625,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 264,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 49.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -508.2060546875,
+    "y": 291.69618225097656,
+    "z": 37.234375,
+    "bbox": [
+     85,
+     56,
+     148,
+     163
+    ],
+    "distance": 12.9
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.9809265136719,
+    "y": 287.66705322265625,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 272,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 49.0
+  },
+  "labels": [
+   {
+    "name": "DoomPlayer",
+    "x": -495.9809265136719,
+    "y": 287.66705322265625,
+    "z": 0.0,
+    "bbox": [
+     135,
+     155,
+     54,
+     84
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 280,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 49.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -509.93841552734375,
+    "y": 310.62249755859375,
+    "z": 37.21875,
+    "bbox": [
+     138,
+     89,
+     71,
+     78
+    ],
+    "distance": 26.9
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.9809265136719,
+    "y": 287.66705322265625,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 288,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 49.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -509.54466247558594,
+    "y": 304.8186340332031,
+    "z": 40.28125,
+    "bbox": [
+     106,
+     55,
+     87,
+     96
+    ],
+    "distance": 21.9
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.9809265136719,
+    "y": 287.66705322265625,
+    "z": 0.0,
+    "bbox": [
+     134,
+     121,
+     62,
+     118
+    ]
+   }
+  ]
+ },
+ {
+  "scenario": "defend_the_line",
+  "tick": 296,
+  "screen_width": 320,
+  "screen_height": 240,
+  "game_variables": {
+   "AMMO2": 200.0,
+   "HEALTH": 33.0
+  },
+  "labels": [
+   {
+    "name": "BulletPuff",
+    "x": -507.9697570800781,
+    "y": 288.1729736328125,
+    "z": 48.671875,
+    "bbox": [
+     59,
+     0,
+     188,
+     75
+    ],
+    "distance": 12.0
+   },
+   {
+    "name": "DoomPlayer",
+    "x": -495.9809265136719,
+    "y": 287.66705322265625,
+    "z": 0.0,
+    "bbox": [
+     134,
+     137,
+     62,
+     102
+    ]
+   }
+  ]
+ }
+]

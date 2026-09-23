@@ -1,0 +1,351 @@
+"""ViZDoom game state -> the compact dict LAYA reads.
+
+This is the highest-leverage file in the project. Discovery established that
+answer quality is dominated by *state phrasing*, not question wording: the same
+`turn` question scored confidence 0.0115 when the state said "bearing +6 degrees
+right" and 0.228 (and correct) when it said "slightly LEFT of your crosshair".
+
+So the rule this module follows, and the line the project's "the model decides,
+the code does not" principle draws:
+
+    Python computes the observation. LAYA chooses the action.
+
+Bearing words, distance words and crosshair alignment are all *observations* --
+the same job the reference pong demo does when it computes "above / below /
+aligned" in JavaScript. What to do about them is left entirely to the model.
+"""
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+from typing import Any, Iterable
+
+# Doom actors that are monsters. An allowlist rather than "everything that is not
+# the player", because the label buffer also reports blood splatter, bullet puffs,
+# corpses and pickups -- captured fixtures contain Blood, BulletPuff, TeleportFog,
+# Medikit, Clip, GreenArmor and DeadZombieman. Treating those as enemies would
+# have the model shooting at its own bullet holes.
+MONSTERS = frozenset({
+    "Zombieman", "ShotgunGuy", "ChaingunGuy", "DoomImp", "Demon", "Spectre",
+    "Cacodemon", "BaronOfHell", "HellKnight", "LostSoul", "PainElemental",
+    "Revenant", "Fatso", "Mancubus", "Arachnotron", "Archvile", "Cyberdemon",
+    "SpiderMastermind", "WolfensteinSS",
+})
+
+# ViZDoom ships custom marine actors whose names vary by scenario
+# (MarineChainsawVzd and friends).
+MONSTER_PREFIXES = ("Marine",)
+
+PROJECTILES = frozenset({"DoomImpBall", "CacodemonBall", "BaronBall", "RevenantTracer", "ArachnotronPlasma", "Rocket"})
+
+SELF = "DoomPlayer"
+
+# Plain words for the model. The checkpoint was trained on support tickets and
+# invoices; engine identifiers like "MarineChainsawVzd" are out-of-distribution noise.
+PLAIN_NAMES = {
+    "Zombieman": "a zombie soldier", "ShotgunGuy": "a shotgun soldier",
+    "ChaingunGuy": "a chaingun soldier", "DoomImp": "an imp", "Demon": "a demon",
+    "Spectre": "a spectre", "Cacodemon": "a cacodemon", "BaronOfHell": "a baron of hell",
+    "HellKnight": "a hell knight", "LostSoul": "a lost soul", "Revenant": "a revenant",
+    "Fatso": "a mancubus", "Mancubus": "a mancubus", "Arachnotron": "an arachnotron",
+    "Archvile": "an arch-vile", "Cyberdemon": "a cyberdemon",
+    "SpiderMastermind": "a spider mastermind", "WolfensteinSS": "an SS soldier",
+    "PainElemental": "a pain elemental",
+}
+
+# Calibrated against captured fixtures: defend_the_center sightings run 24 to 812
+# world units (p50 672); deadly_corridor reaches 1328.
+DISTANCE_BANDS = ((150, "right on top of you"), (350, "close"), (650, "a moderate distance away"))
+FAR = "far away"
+
+# Fractions of half-screen-width. With Doom's 90 degree FOV, half-width is 45
+# degrees, so "slightly" is about 9 degrees off centre.
+BEARING_BANDS = ((0.20, "slightly {side}"), (0.55, "to the {side}"))
+FAR_BEARING = "far to the {side}"
+
+MAX_ENEMIES_DESCRIBED = 3
+
+# Widens the crosshair box when deciding whether an enemy is "lined up". 0 is the
+# geometrically exact answer for a point crosshair; a few pixels of slack makes the
+# model commit to a shot slightly before the sweep is perfect, which matters
+# because the crosshair sits on an enemy in only ~6% of ticks.
+CROSSHAIR_TOLERANCE_PX = 0
+
+
+def is_monster(name: str) -> bool:
+    """True for actors that can be shot at.
+
+    Corpses are named ``Dead*`` in Doom and are excluded: they are scenery, and
+    aiming at them wastes the whole point of the decision.
+    """
+    if name.startswith("Dead"):
+        return False
+    return name in MONSTERS or name.startswith(MONSTER_PREFIXES)
+
+
+def plain_name(name: str) -> str:
+    if name in PLAIN_NAMES:
+        return PLAIN_NAMES[name]
+    if name.startswith("Marine"):
+        return "a marine"
+    return "an enemy"
+
+
+@dataclass(frozen=True)
+class EnemySighting:
+    """One visible monster, already reduced to what the model needs."""
+
+    name: str
+    offset: int          # pixels from screen centre; negative is left
+    offset_fraction: float
+    distance: float
+    in_crosshair: bool   # the crosshair falls inside this enemy's bounding box
+
+    @property
+    def side(self) -> str:
+        return "left" if self.offset < 0 else "right"
+
+    @property
+    def bearing_phrase(self) -> str:
+        if self.in_crosshair:
+            return "centred in your crosshair"
+        magnitude = abs(self.offset_fraction)
+        for limit, template in BEARING_BANDS:
+            if magnitude <= limit:
+                return template.format(side=self.side)
+        return FAR_BEARING.format(side=self.side)
+
+    @property
+    def distance_phrase(self) -> str:
+        for limit, phrase in DISTANCE_BANDS:
+            if self.distance < limit:
+                return phrase
+        return FAR
+
+    def describe(self) -> str:
+        return f"{plain_name(self.name)} is {self.bearing_phrase}, {self.distance_phrase}"
+
+    def describe_as_subject(self) -> str:
+        """Same facts, phrased to follow "The nearest enemy is ..."."""
+        return f"{plain_name(self.name)}, {self.bearing_phrase}, {self.distance_phrase}"
+
+
+@dataclass(frozen=True)
+class Observation:
+    """Everything one tick contributes, independent of ViZDoom's object model.
+
+    Built either from a live ``GameState`` or from a recorded fixture, so tests
+    and the question bench never need a Doom process.
+    """
+
+    health: float
+    ammo: float
+    enemies: tuple[EnemySighting, ...]
+    killcount: float = 0.0
+    screen_width: int = 320
+    incoming_projectiles: int = 0
+
+    @property
+    def nearest(self) -> EnemySighting | None:
+        return self.enemies[0] if self.enemies else None
+
+    @property
+    def crosshair_target(self) -> EnemySighting | None:
+        """The nearest enemy the crosshair is actually on, if any.
+
+        Distinct from ``nearest``: a fixture exists where the closest demon is
+        far to the left while a marine further away sits dead centre. Firing
+        depends on this one, aiming depends on ``nearest``, and conflating them
+        made the narration contradict itself.
+        """
+        return next((enemy for enemy in self.enemies if enemy.in_crosshair), None)
+
+
+def _sighting(
+    label: dict,
+    player: tuple[float, float],
+    centre_x: float,
+    half_width: float,
+    tolerance_px: int = CROSSHAIR_TOLERANCE_PX,
+) -> EnemySighting:
+    x, y, width, _height = label["bbox"]
+    box_centre = x + width / 2
+    offset = box_centre - centre_x
+    return EnemySighting(
+        name=label["name"],
+        offset=int(round(offset)),
+        offset_fraction=offset / half_width if half_width else 0.0,
+        distance=math.dist((label["x"], label["y"]), player),
+        # Exact for hitscan weapons at tolerance 0: the shot lands where the
+        # crosshair is, so the enemy is lined up precisely when the crosshair is
+        # inside its box. Tolerance widens that box -- see CROSSHAIR_TOLERANCE_PX.
+        in_crosshair=(x - tolerance_px) <= centre_x <= (x + width + tolerance_px),
+    )
+
+
+def observe(
+    labels: Iterable[dict],
+    *,
+    health: float,
+    ammo: float,
+    killcount: float = 0.0,
+    screen_width: int = 320,
+    player: tuple[float, float] | None = None,
+    max_enemies: int = MAX_ENEMIES_DESCRIBED,
+    tolerance_px: int = CROSSHAIR_TOLERANCE_PX,
+) -> Observation:
+    """Build an ``Observation`` from label dicts (live or recorded)."""
+    labels = list(labels)
+    if player is None:
+        own = next((label for label in labels if label["name"] == SELF), None)
+        player = (own["x"], own["y"]) if own else (0.0, 0.0)
+
+    centre_x = screen_width / 2
+    half_width = screen_width / 2
+    enemies = [
+        _sighting(label, player, centre_x, half_width, tolerance_px)
+        for label in labels
+        if is_monster(label["name"])
+    ]
+    enemies.sort(key=lambda sighting: sighting.distance)
+    projectiles = sum(1 for label in labels if label["name"] in PROJECTILES)
+
+    return Observation(
+        health=health,
+        ammo=ammo,
+        enemies=tuple(enemies[:max_enemies]),
+        killcount=killcount,
+        screen_width=screen_width,
+        incoming_projectiles=projectiles,
+    )
+
+
+def from_game_state(
+    state: Any,
+    game: Any,
+    *,
+    max_enemies: int = MAX_ENEMIES_DESCRIBED,
+    tolerance_px: int = CROSSHAIR_TOLERANCE_PX,
+) -> Observation | None:
+    """Adapt a live ViZDoom ``GameState``. Returns ``None`` when the episode ended."""
+    if state is None:
+        return None
+    variables = {
+        str(name).split(".")[-1]: float(value)
+        for name, value in zip(game.get_available_game_variables(), state.game_variables)
+    }
+    labels = [
+        {
+            "name": label.object_name,
+            "x": float(label.object_position_x),
+            "y": float(label.object_position_y),
+            "bbox": [int(label.x), int(label.y), int(label.width), int(label.height)],
+        }
+        for label in (state.labels or [])
+    ]
+    return observe(
+        labels,
+        health=variables.get("HEALTH", 0.0),
+        ammo=variables.get("AMMO2", 0.0),
+        killcount=variables.get("KILLCOUNT", 0.0),
+        screen_width=game.get_screen_width(),
+        player=(variables.get("POSITION_X", 0.0), variables.get("POSITION_Y", 0.0)) if "POSITION_X" in variables else None,
+        max_enemies=max_enemies,
+        tolerance_px=tolerance_px,
+    )
+
+
+def from_fixture(
+    fixture: dict,
+    *,
+    max_enemies: int = MAX_ENEMIES_DESCRIBED,
+    tolerance_px: int = CROSSHAIR_TOLERANCE_PX,
+) -> Observation:
+    """Adapt a fixture recorded by ``bench/capture.py``."""
+    variables = fixture.get("game_variables", {})
+    return observe(
+        fixture["labels"],
+        health=variables.get("HEALTH", 0.0),
+        ammo=variables.get("AMMO2", 0.0),
+        killcount=variables.get("KILLCOUNT", 0.0),
+        screen_width=fixture.get("screen_width", 320),
+        max_enemies=max_enemies,
+        tolerance_px=tolerance_px,
+    )
+
+
+def narrate(observation: Observation) -> str:
+    """The sentence that does the work.
+
+    Mirrors the reference pong demo's ``observation`` field: the spatial relation
+    stated in plain words, because that is the form this model can act on.
+    """
+    nearest = observation.nearest
+    if nearest is None:
+        # Phrased so that searching is the obviously available move. The previous
+        # wording ("your crosshair is on empty space") described the situation
+        # without suggesting that anything could be done about it, and the model
+        # sat still -- which was the single biggest drag on its play.
+        # Kept to two sentences: the first draft ran to four and pushed decision
+        # latency from 46 ms to 74 ms, which cost skipped slots at the live cadence.
+        # Every token in the state is paid for on every tick.
+        return (
+            "No enemy is in sight. Enemies are approaching from outside your view, "
+            "and turning to sweep the room is the only way to find them."
+        )
+
+    sentences = [f"The nearest enemy is {nearest.describe_as_subject()}."]
+    target = observation.crosshair_target
+    if target is nearest:
+        sentences.append("It is lined up with your crosshair, so shooting now would hit it.")
+    elif target is not None:
+        sentences.append(
+            f"It is not lined up with your crosshair, but {plain_name(target.name)} further away is "
+            "centred in your crosshair, so shooting now would hit that one."
+        )
+    else:
+        sentences.append(
+            "No enemy is lined up with your crosshair; the nearest one sits to the "
+            f"{nearest.side} of where you are aiming."
+        )
+
+    others = observation.enemies[1:]
+    if others:
+        described = "; ".join(other.describe() for other in others)
+        sentences.append(f"{len(others)} more enemy in sight: {described}." if len(others) == 1
+                         else f"{len(others)} more enemies in sight: {described}.")
+    if observation.incoming_projectiles:
+        sentences.append(f"{observation.incoming_projectiles} enemy projectile is heading toward you."
+                         if observation.incoming_projectiles == 1
+                         else f"{observation.incoming_projectiles} enemy projectiles are heading toward you.")
+    if observation.health <= 30:
+        sentences.append("You are badly hurt.")
+    if observation.ammo <= 0:
+        sentences.append("You are out of ammunition and cannot shoot.")
+    return " ".join(sentences)
+
+
+def serialize(observation: Observation) -> dict:
+    """The state dict posted to LAYA.
+
+    Natural-language ``observation`` first, structured numbers beside it -- the
+    shape the reference pong demo uses. Kept small: the typed-decisions context
+    is 1024 tokens and every token is latency.
+    """
+    nearest = observation.nearest
+    state: dict[str, Any] = {
+        "observation": narrate(observation),
+        "health": int(observation.health),
+        "ammunition": int(observation.ammo),
+        "enemies_in_sight": len(observation.enemies),
+        "an_enemy_is_lined_up_with_your_crosshair": observation.crosshair_target is not None,
+    }
+    if nearest is not None:
+        state["nearest_enemy"] = {
+            "what": plain_name(nearest.name),
+            "where": nearest.bearing_phrase,
+            "how_far": nearest.distance_phrase,
+            "lined_up_with_crosshair": nearest.in_crosshair,
+        }
+    return state

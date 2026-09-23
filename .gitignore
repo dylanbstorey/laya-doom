@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+
+# Recorded gameplay and scratch output
+captures/
+bench/results.json
+bench/tuning.json
+
+# Metis keeps its plan in markdown; the database is a local cache.
+.metis/metis.db
+_vizdoom.ini
