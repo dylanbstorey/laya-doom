@@ -77,6 +77,15 @@ DEATHMATCH = Scenario(
         vzd.GameVariable.SELECTED_WEAPON,
         vzd.GameVariable.SELECTED_WEAPON_AMMO,
         vzd.GameVariable.AMMO2,
+        # Which weapons the player is actually carrying. Without these the weapon
+        # question is unanswerable: the model was choosing between weapons it might
+        # not own, and a switch to one it does not own presses a button that does
+        # nothing. Weapons are picked up during play, so this changes mid-episode.
+        vzd.GameVariable.WEAPON2,
+        vzd.GameVariable.WEAPON3,
+        vzd.GameVariable.WEAPON4,
+        vzd.GameVariable.WEAPON5,
+        vzd.GameVariable.WEAPON6,
     ],
     notes="Reward counts kills only. 20 buttons, six weapon slots, pickups everywhere.",
 )

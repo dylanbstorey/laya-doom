@@ -182,6 +182,7 @@ class Observation:
     armor: float | None = None
     weapon_slot: int | None = None
     weapon_ammo: float | None = None
+    weapons_held: tuple[int, ...] = ()          # slots the player is carrying
     items: tuple[tuple[str, float], ...] = ()   # (kind, distance), nearest first
 
     @property
@@ -190,6 +191,10 @@ class Observation:
 
     def nearest_item(self, kind: str) -> float | None:
         return next((distance for k, distance in self.items if k == kind), None)
+
+    @property
+    def weapon_names_held(self) -> list[str]:
+        return [WEAPON_NAMES[slot] for slot in self.weapons_held if slot in WEAPON_NAMES]
 
     @property
     def nearest(self) -> EnemySighting | None:
@@ -248,6 +253,7 @@ def observe(
     armor: float | None = None,
     weapon_slot: int | None = None,
     weapon_ammo: float | None = None,
+    weapons_held: tuple[int, ...] = (),
 ) -> Observation:
     """Build an ``Observation`` from label dicts (live or recorded)."""
     labels = list(labels)
@@ -291,6 +297,7 @@ def observe(
         armor=armor,
         weapon_slot=weapon_slot,
         weapon_ammo=weapon_ammo,
+        weapons_held=tuple(weapons_held),
         items=tuple(items[:6]),
     )
 
@@ -333,6 +340,9 @@ def from_game_state(
         armor=variables.get("ARMOR"),
         weapon_slot=int(variables["SELECTED_WEAPON"]) if "SELECTED_WEAPON" in variables else None,
         weapon_ammo=variables.get("SELECTED_WEAPON_AMMO"),
+        weapons_held=tuple(
+            slot for slot in range(1, 8) if variables.get(f"WEAPON{slot}", 0) > 0
+        ),
     )
 
 
@@ -390,6 +400,12 @@ def loadout_sentences(observation: Observation) -> list[str]:
         f"You are holding the {observation.weapon_name} with "
         f"{int(observation.weapon_ammo or 0)} shots left."
     ]
+    others = [name for name in observation.weapon_names_held if name != observation.weapon_name]
+    said.append(
+        f"You are also carrying: {', '.join(others)}."
+        if others
+        else "You are not carrying any other weapon, so switching is not possible."
+    )
     if (observation.weapon_ammo or 0) <= 5:
         distance = observation.nearest_item("ammunition")
         said.append(
@@ -419,18 +435,23 @@ def narrate(observation: Observation) -> str:
     if nearest is None:
         if observation.has_goal:
             # On a map with somewhere to be, an empty view means the way is clear.
-            return f"{journey} No enemy is in sight, so the way ahead is clear."
-        # Phrased so that searching is the obviously available move. The previous
-        # wording ("your crosshair is on empty space") described the situation
-        # without suggesting that anything could be done about it, and the model
-        # sat still -- which was the single biggest drag on its play.
-        # Kept to two sentences: the first draft ran to four and pushed decision
-        # latency from 46 ms to 74 ms, which cost skipped slots at the live cadence.
-        # Every token in the state is paid for on every tick.
-        return (
-            "No enemy is in sight. Enemies are approaching from outside your view, "
-            "and turning to sweep the room is the only way to find them."
-        )
+            empty = f"{journey} No enemy is in sight, so the way ahead is clear."
+        else:
+            # Phrased so that searching is the obviously available move. The previous
+            # wording ("your crosshair is on empty space") described the situation
+            # without suggesting that anything could be done about it, and the model
+            # sat still -- which was the single biggest drag on its play.
+            # Kept to two sentences: the first draft ran to four and pushed decision
+            # latency from 46 ms to 74 ms, which cost skipped slots at the live cadence.
+            # Every token in the state is paid for on every tick.
+            empty = (
+                "No enemy is in sight. Enemies are approaching from outside your view, "
+                "and turning to sweep the room is the only way to find them."
+            )
+        # The loadout belongs here too. Returning early meant that on deathmatch --
+        # where the view is empty much of the time -- the prose never mentioned which
+        # weapon was in hand, exactly when the weapon question was being asked.
+        return " ".join([empty, *loadout_sentences(observation)])
 
     sentences = [f"The nearest enemy is {nearest.describe_as_subject()}."]
     target = observation.crosshair_target
@@ -486,6 +507,9 @@ def serialize(observation: Observation) -> dict:
     if observation.weapon_slot is not None:
         state["weapon_in_hand"] = observation.weapon_name
         state["shots_left_for_this_weapon"] = int(observation.weapon_ammo or 0)
+        state["other_weapons_you_are_carrying"] = [
+            name for name in observation.weapon_names_held if name != observation.weapon_name
+        ]
     if observation.armor is not None:
         state["armour"] = int(observation.armor)
     for kind in ("health", "ammunition", "weapon"):

@@ -112,3 +112,44 @@ class TestRoundTripFromSerializedState:
     def test_width_is_identical_both_ways(self):
         obs = observation(label("Demon"))
         assert len(features_from_state(serialize(obs))) == len(features(obs))
+
+
+class TestLoadoutNarration:
+    """The weapon question is asked on every tick, including when nothing is
+    visible -- so the prose has to describe the loadout on every tick too."""
+
+    def test_loadout_appears_with_no_enemy_in_sight(self):
+        from laya_doom.state import narrate
+
+        text = narrate(observation(label("Blood"), weapon_slot=4, weapon_ammo=30.0,
+                                   weapons_held=(2, 3, 4)))
+        assert "chaingun" in text
+        assert "also carrying" in text
+
+    def test_loadout_appears_with_an_enemy_in_sight(self):
+        from laya_doom.state import narrate
+
+        text = narrate(observation(label("Zombieman"), weapon_slot=3, weapon_ammo=8.0,
+                                   weapons_held=(2, 3)))
+        assert "shotgun" in text
+
+    def test_carrying_nothing_else_is_stated(self):
+        from laya_doom.state import narrate
+
+        text = narrate(observation(label("Blood"), weapon_slot=2, weapon_ammo=50.0,
+                                   weapons_held=(2,)))
+        assert "not carrying any other weapon" in text
+
+    def test_other_weapons_reach_the_serialized_state(self):
+        from laya_doom.state import serialize
+
+        state = serialize(observation(label("Blood"), weapon_slot=4, weapon_ammo=30.0,
+                                      weapons_held=(2, 3, 4, 6)))
+        assert state["weapon_in_hand"] == "chaingun"
+        assert set(state["other_weapons_you_are_carrying"]) == {"pistol", "shotgun", "plasma rifle"}
+
+    def test_maps_without_weapons_are_unaffected(self):
+        from laya_doom.state import narrate
+
+        text = narrate(observation(label("Demon")))
+        assert "holding" not in text

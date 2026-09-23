@@ -367,7 +367,14 @@ DEATHMATCH_MOVE = {
     },
 }
 
-DEATHMATCH_WEAPON = {
+# v1, kept as the record. It asked which weapon to hold without the state ever
+# saying which weapons the player owned, so the model was choosing among weapons it
+# might not be carrying -- and a switch to one it does not own presses a button that
+# does nothing. Measured over 8 lockstep episodes it chose `pistol` 27% (Doom's worst
+# weapon, and the criterion said pistol was a last resort), `shotgun` 19%, and `keep`
+# only 2%, meaning it thrashed weapon switches almost every decision. The scripted
+# baseline, by contrast, chose `keep` 11% and `chaingun` 39%.
+DEATHMATCH_WEAPON_BLIND = {
     "type": "choice",
     "instructions": (
         "Choose which weapon the player should be holding. A shotgun or chaingun is reliable at "
@@ -383,6 +390,39 @@ DEATHMATCH_WEAPON = {
         "plasma_rifle": "Switch to the plasma rifle for heavy sustained damage",
         "pistol": "Switch to the pistol, only if nothing better has ammunition",
     },
+}
+
+# v2. The state now lists what the player is carrying, so the question is
+# answerable. Three changes beyond that:
+#
+#  * `keep` is stated as the default and named first, because switching costs a
+#    moment and the measured failure was thrashing, not stickiness.
+#  * `pistol` is gone. It is never the right answer when anything else is held, and
+#    slot 2 is the starting weapon, so `keep` already covers it. Offering a bad
+#    option invites it -- the corridor's `lean` variant showed the option set shapes
+#    every answer rather than being a menu picked from independently.
+#  * Every switch criterion says out loud that it only applies to a weapon the
+#    player is actually carrying.
+DEATHMATCH_WEAPON = {
+    "type": "choice",
+    "instructions": (
+        "Choose which weapon the player should be holding. Switching weapons takes a moment "
+        "during which the player cannot shoot, so keep the current weapon unless there is a "
+        "clear reason to change. Only switch to a weapon the player is actually carrying; the "
+        "state lists them. Never switch to a weapon that has no ammunition."
+    ),
+    "criteria": {
+        "keep": "Keep the weapon already in hand. This is the right answer unless the current weapon is out of ammunition or clearly wrong for the situation",
+        "shotgun": "Switch to the shotgun, if carrying one, for close and medium range",
+        "chaingun": "Switch to the chaingun, if carrying one, for sustained fire at medium range",
+        "rocket_launcher": "Switch to the rocket launcher, if carrying one, for a distant or tough enemy, but never at close range",
+        "plasma_rifle": "Switch to the plasma rifle, if carrying one, for heavy sustained damage",
+    },
+}
+
+DEATHMATCH_WEAPON_VARIANTS = {
+    "blind": DEATHMATCH_WEAPON_BLIND,
+    "inventory": DEATHMATCH_WEAPON,
 }
 
 DEATHMATCH_BATTERY: dict[str, dict] = {
