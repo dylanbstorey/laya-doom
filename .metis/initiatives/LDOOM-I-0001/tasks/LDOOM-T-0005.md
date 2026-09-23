@@ -4,14 +4,14 @@ level: task
 title: "Browser decision panel UI"
 short_code: "LDOOM-T-0005"
 created_at: 2026-09-23T02:45:36.186167+00:00
-updated_at: 2026-09-23T03:34:03.552566+00:00
+updated_at: 2026-09-23T03:55:36.226145+00:00
 parent: LDOOM-I-0001
 blocked_by: []
 archived: false
 
 tags:
   - "#task"
-  - "#phase/active"
+  - "#phase/completed"
 
 
 exit_criteria_met: false

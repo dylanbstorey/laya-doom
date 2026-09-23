@@ -4,14 +4,14 @@ level: task
 title: "Committed sweeps, forward movement, and a full decision log"
 short_code: "LDOOM-T-0008"
 created_at: 2026-09-23T03:34:03.573656+00:00
-updated_at: 2026-09-23T03:34:03.573656+00:00
+updated_at: 2026-09-23T03:55:45.806047+00:00
 parent: LDOOM-I-0001
 blocked_by: []
 archived: false
 
 tags:
   - "#task"
-  - "#phase/todo"
+  - "#phase/completed"
 
 
 exit_criteria_met: false
@@ -34,7 +34,9 @@ one interval (4 tics) sweeps only **10.6 degrees** — and because the model re-
 interval it can reverse direction, leaving the view oscillating inside a narrow arc instead of
 searching the room.
 
-## Acceptance Criteria **[REQUIRED]**
+## Acceptance Criteria
+
+**[REQUIRED]**
 
 - [x] A chosen `scan` commits to **at least 30 degrees** of rotation (>= 12 tics) before the
       direction can change.

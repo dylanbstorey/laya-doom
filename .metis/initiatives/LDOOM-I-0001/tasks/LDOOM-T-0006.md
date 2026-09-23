@@ -4,14 +4,14 @@ level: task
 title: "README and demo capture"
 short_code: "LDOOM-T-0006"
 created_at: 2026-09-23T02:45:36.201819+00:00
-updated_at: 2026-09-23T02:45:36.201819+00:00
+updated_at: 2026-09-23T03:55:50.908149+00:00
 parent: LDOOM-I-0001
 blocked_by: []
 archived: false
 
 tags:
   - "#task"
-  - "#phase/todo"
+  - "#phase/completed"
 
 
 exit_criteria_met: false
@@ -29,7 +29,9 @@ initiative_id: LDOOM-I-0001
 Make the repo clonable and the result shareable, with numbers measured on this machine rather
 than borrowed from anyone's marketing.
 
-## Acceptance Criteria **[REQUIRED]**
+## Acceptance Criteria
+
+**[REQUIRED]**
 
 - [x] README states what this is: LAYA, an open-weights System 1 model, in Doom's control loop,
       after TypeSafe's Jev demo.
