@@ -253,31 +253,32 @@ forward movement: the whole answer mix shifted, with `scan` rising from 16% to 2
 `defend_the_center`: +1 per kill, −1 for dying. Variance across episodes is large, so treat
 small gaps as noise.
 
-4 episodes per policy, same seeds, all three with the same four turn options:
+5 episodes per policy, same seeds, all three with the same five options and the same
+committed-sweep behaviour:
 
-| policy | mean score | kills | decisions/s | p50 | skipped slots |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| **laya** | **+2.8** | 3.8 | 6.9 | 76.8 ms | **20** |
-| scripted | +9.0 | 10.0 | 8.7 | — | 0 |
-| random | +1.5 | 2.5 | 8.8 | — | 0 |
+| policy | mean score | kills | decisions/s | p50 | p95 | skipped slots |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| **laya** | **+8.0** | 9.0 | 5.2 | 98.5 ms | 112.4 ms | **65** |
+| scripted | +12.4 | 13.4 | 8.8 | — | — | 0 |
+| random | +1.0 | 2.0 | 8.8 | — | — | 0 |
 
-LAYA beats random and reaches about **a third** of the scripted reference policy — the same
-policy `bench/score.py` scores its questions against, and effectively the ceiling this state
-representation allows.
+LAYA reaches **65% of the scripted reference policy** and beats random eightfold. Where it
+started, and what each change was worth:
 
-Two things are worth reading off that table.
+| | mean score | vs scripted |
+| --- | ---: | ---: |
+| `hold` also meant "nothing visible" | +0.3 | 100%¹ |
+| `scan` given its own option | +2.8 | 31% |
+| committed 30° sweeps, plus `advance` | **+8.0** | 65% |
 
-**The `scan` fix was worth ~9× to the model.** Before it, LAYA scored +0.3 with 1.3 kills and
-*lost* to random. One question-design change — giving searching its own option instead of
-folding it into `hold` — moved it to +2.8. The scripted policy gained even more, from +0.3 to
-+9.0, which is why it looks so dominant now: it had been equally crippled by being told to
-stand still.
+¹ Not a good sign — the scripted policy was equally crippled at +0.3, because it had been told
+to stand still too. Fixing that took it to +12.4.
 
-**LAYA makes 6.9 decisions/sec where the baselines make 8.7.** It skipped 20 slots per
-episode because p95 latency (99.8 ms) crowds the 114.3 ms interval, so roughly a fifth of its
-opportunities to act are spent waiting on inference. The baselines answer instantly and never
-skip. That missing 20% of decisions is the price of putting a real model in the loop, and it
-is visible in the score rather than hidden.
+**The latency cost is the honest part of this table.** LAYA makes **5.2 decisions/sec against
+the baselines' 8.8**, skipping ~65 slots per episode, because p50 (98.5 ms) now fills most of
+the 114.3 ms interval. Roughly 40% of its chances to act are spent waiting on inference. The
+baselines answer instantly and never skip. That is what putting a real model in a real-time
+loop costs, and it is visible in the score rather than hidden.
 
 ## Running the tests
 

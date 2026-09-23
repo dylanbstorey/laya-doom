@@ -122,9 +122,17 @@ TURN_APPROACH = {
     },
 }
 
-# The same five options, written short. Question text is re-tokenised on every
-# tick, so verbose criteria are paid for continuously: the long form above pushed
-# p50 to ~98 ms against a 114.3 ms interval and cost roughly 40% of slots.
+# The same five options, written short. Question text is re-tokenised on every tick,
+# so criteria length is paid for continuously. An interleaved A/B -- alternating the
+# two forms request-by-request on identical states, so ambient machine load falls on
+# both equally -- measured a 30% smaller payload (656 -> 462 chars) buying 10.6 ms:
+# p50 84.2 ms verbose against 73.6 ms terse, pooled sd 10.3 ms.
+#
+# That is a real but modest effect, and worth recording because the first reading of
+# it was wrong. Episode latency had risen to ~98 ms p50 and this was attributed to
+# the longer question; in fact most of that was other work on the machine, which the
+# separate before/after runs never controlled for. Interleaving is what separated the
+# two, and the honest split is ~10 ms of question length on top of a noisy baseline.
 
 TURN_APPROACH_TERSE = {
     "type": "choice",

@@ -19,6 +19,7 @@ States per style: 40.
 | `turn_scan` | 100% | 0.156 | 57% | 0.038 |
 | `turn_scan_urgent` | 100% | 0.127 | 50% | 0.016 |
 | `turn_approach` | 85% | 0.073 | 35% | 0.026 |
+| `turn_approach_terse` | 75% | 0.105 | 25% | 0.040 |
 
 ## Threat, which has no crisp oracle
 

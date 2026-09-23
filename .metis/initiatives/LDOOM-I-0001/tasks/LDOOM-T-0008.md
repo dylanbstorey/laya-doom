@@ -36,22 +36,22 @@ searching the room.
 
 ## Acceptance Criteria **[REQUIRED]**
 
-- [ ] A chosen `scan` commits to **at least 30 degrees** of rotation (>= 12 tics) before the
+- [x] A chosen `scan` commits to **at least 30 degrees** of rotation (>= 12 tics) before the
       direction can change.
-- [ ] A sweep never reverses mid-sweep; one sweep is one direction.
-- [ ] A sweep aborts immediately when a decision other than `scan` arrives, so spotting an enemy
+- [x] A sweep never reverses mid-sweep; one sweep is one direction.
+- [x] A sweep aborts immediately when a decision other than `scan` arrives, so spotting an enemy
       interrupts the search rather than finishing the arc first.
-- [ ] `advance` is available as an action and maps to `MOVE_FORWARD`, letting the model close on
+- [x] `advance` is available as an action and maps to `MOVE_FORWARD`, letting the model close on
       a lined-up but distant enemy.
-- [ ] `MOVE_FORWARD` is added to the scenario's buttons (`defend_the_center.cfg` exposes only
+- [x] `MOVE_FORWARD` is added to the scenario's buttons (`defend_the_center.cfg` exposes only
       TURN_LEFT/TURN_RIGHT/ATTACK; verified that adding it works and moves 3.3 units/tic).
-- [ ] The scripted baseline gets the same action space, so the comparison stays fair.
-- [ ] The question schema is re-benched; `advance` ships only if it scores.
-- [ ] The UI shows a scrolling log of **every** decision, not just the current one, with tick,
+- [x] The scripted baseline gets the same action space, so the comparison stays fair.
+- [x] The question schema is re-benched; `advance` ships only if it scores.
+- [x] The UI shows a scrolling log of **every** decision, not just the current one, with tick,
       answers, confidence and latency.
-- [ ] The UI shows sweep state and skipped slots, so a committed sweep is legible rather than
+- [x] The UI shows sweep state and skipped slots, so a committed sweep is legible rather than
       looking like a frozen panel.
-- [ ] A 503 from the single-slot decision server is retried rather than failing warmup.
+- [x] A 503 from the single-slot decision server is retried rather than failing warmup.
 
 ## Test Cases **[CONDITIONAL: Testing Task]**
 
@@ -96,4 +96,45 @@ another forward pass would cost more decisions than the action gains.
 
 ## Status Updates **[REQUIRED]**
 
-*To be added during implementation*
+### 2026-09-23 — sweeps and forward movement shipped
+
+Pushed as `367ba47`. 124 tests.
+
+**Measured first, then built.** Doom turns **2.64 deg/tic**, so one 4-tic interval sweeps only
+**10.6 degrees** — an uncommitted `scan` was never going to search a room. `SWEEP_TICS = 12`
+gives **31.7 degrees** per sweep, held across ~3 decision intervals, cancelled instantly by any
+non-`scan` answer.
+
+`MOVE_FORWARD` is not in `defend_the_center.cfg` (turn and attack only) but `add_available_button`
+works: **3.3 units/tic** against an arena radius of ~812.
+
+**`advance` is the one case where the fixture oracle and play disagree, and play won:**
+
+| turn question | fixture accuracy | mean score | kills |
+| --- | ---: | ---: | ---: |
+| `scan` (4 options) | **100%** | +4.6 (sd 3.9) | 5.6 |
+| `approach` (5 options) | 85% | **+13.4** (sd 5.1) | **14.4** |
+
+The oracle claimed advancing is for "aimed but far away" shots and marked the model wrong 4
+times for choosing `hold` instead. In play the value of `advance` is that **moving repositions
+the player and finds enemies** — something a fixture, being one frozen tick, cannot express. The
+oracle was measuring the wrong thing, so it is reported rather than obeyed. Recorded prominently
+because it is a real limit on how much the offline bench can settle.
+
+Honest caveat: `advance` is chosen only **~7%** of the time, so the 3x gain is not purely forward
+movement — the whole answer mix shifted (`scan` 16% -> 24%, `left` 28% -> 14%).
+
+**Correction — I over-attributed a latency regression.** I claimed the verbose five-option
+criteria pushed p50 from ~77 ms to ~98 ms and cost ~40% of slots. The user pointed out the
+machine was running other work, and they are right that this is a confound: the two question
+forms were measured in separate runs at different times, so ambient load was never controlled.
+An interleaved A/B (alternating forms request-by-request on identical states, so load falls on
+both equally) is the correct experiment and is running. The claim in `questions.py` is being
+softened to match whatever it shows.
+
+Trimming input tokens is worth doing regardless, and the user confirmed that, so
+`TURN_APPROACH_TERSE` ships once its accuracy is verified — a shorter question is re-tokenised
+on every tick either way.
+
+**Still open:** switch `BATTERY` to the terse variant after checking accuracy holds; refresh the
+README scoreboard with the five-option numbers.
