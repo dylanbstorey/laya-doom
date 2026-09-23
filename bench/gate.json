@@ -1,14 +1,16 @@
 [
  {
   "name": "scripted",
-  "mean_score": 4.25,
-  "sd": 9.34650431215558,
-  "mean_kills": 2.0,
-  "p50_ms": 0.003958004526793957,
+  "mean_score": 5.625,
+  "sd": 3.77728171346236,
+  "mean_kills": 2.25,
+  "p50_ms": 0.0029170187190175056,
   "answers": {
-   "move:advance": 0.5,
-   "weapon:chaingun": 0.393,
-   "weapon:keep": 0.107
+   "move:scan": 0.328,
+   "move:aim_right": 0.219,
+   "move:aim_left": 0.191,
+   "move:hold": 0.19,
+   "move:retreat": 0.071
   },
   "samples": 0
  },
@@ -17,7 +19,7 @@
   "mean_score": 2.25,
   "sd": 3.011881234615431,
   "mean_kills": 1.25,
-  "p50_ms": 0.0015419209375977516,
+  "p50_ms": 0.0010420335456728935,
   "answers": {
    "move:hold": 0.159,
    "move:advance": 0.155,
@@ -31,16 +33,16 @@
  },
  {
   "name": "laya",
-  "mean_score": 2.75,
-  "sd": 3.7321001364608946,
-  "mean_kills": 1.375,
-  "p50_ms": 141.1176660330966,
+  "mean_score": 3.875,
+  "sd": 2.2320714274285347,
+  "mean_kills": 1.875,
+  "p50_ms": 127.34191701747477,
   "answers": {
-   "move:advance": 0.5,
-   "weapon:keep": 0.435,
-   "weapon:shotgun": 0.063,
-   "weapon:rocket_launcher": 0.002
+   "move:scan": 0.386,
+   "move:hold": 0.228,
+   "move:aim_left": 0.196,
+   "move:aim_right": 0.19
   },
-  "samples": 1475
+  "samples": 857
  }
 ]

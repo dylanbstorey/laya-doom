@@ -448,8 +448,8 @@ DEATHMATCH_MOVE_STRATEGY = {
         "retreat": "THIRD: the player is badly hurt and about to die, so back away",
         "dodge_left": "THIRD: an enemy is close and shooting, so sidestep left",
         "dodge_right": "THIRD: an enemy is close and shooting, so sidestep right",
-        "grab": "FOURTH: no enemy needs dealing with and a weapon or health pickup is nearby, so walk to it and collect it",
-        "scan": "LAST: nothing at all is visible, so turn on the spot to search the arena, because walking in a straight line without looking around finds nothing",
+        "grab": "FOURTH: no enemy needs dealing with and a pickup is nearby, so walk onto it",
+        "scan": "LAST: nothing at all is visible, so turn on the spot to search for an enemy",
         "advance": "LAST: nothing needs dealing with and the way ahead is clear, so move forward to cover ground",
     },
 }

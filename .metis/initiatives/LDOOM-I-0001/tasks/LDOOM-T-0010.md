@@ -71,8 +71,9 @@ write. That is precisely what the gate measures, which is why it comes first.
       different buttons in the same tick.
 - [x] A deathmatch scripted baseline that is a fair opponent rather than a strawman.
 - [x] `bench/gate.py` runs everything in lockstep and reports a verdict against one sd.
-- [ ] Gate verdict at n=8, with harvesting.
-- [ ] If PASS: feature extractor, student, and a real-time comparison at full 35 Hz.
+- [x] Gate verdict at n=8, with harvesting.
+- [x] Feature extractor (37 features) and outcome-tagged harvest, ~4,300 rows.
+- [ ] Student and a real-time comparison at full 35 Hz -- see the reframing below.
 
 ## Status Updates **[REQUIRED]**
 
@@ -100,3 +101,40 @@ LAYA at 14x the scripted policy. Inconclusive at n=2 (sd 7.1) by the gate's own 
 **Flaw already visible:** LAYA chooses `weapon:pistol` 41% of the time, despite the criterion
 saying pistol is for when nothing better has ammunition. Worth fixing before harvesting in
 volume — a student trained on that would faithfully learn to hold the worst weapon.
+
+
+### 2026-09-23 — gate FAILS after six prompt iterations; the question should change
+
+Final, 8 episodes, lockstep, two-question battery with strategy criteria, `scan` and `grab`,
+bounded commitments:
+
+| policy | mean score | sd | kills |
+| --- | ---: | ---: | ---: |
+| scripted | **+5.6** | 3.8 | 2.2 |
+| laya | +3.9 | 2.2 | 1.9 |
+| random | +2.2 | 3.0 | 1.2 |
+
+**LAYA has converged onto the scripted policy** — scan 39%/33%, aim 39%/41%, hold 23%/19% — and
+uses **four of nine** options. `advance`, `grab`, `dodge_left`, `dodge_right` and `retreat` are
+all at 0%. It stands, turns and shoots, never walks, and therefore still carries the pistol it
+spawned with: across 1436 harvested ticks the player held **one weapon, 100% of the time**.
+
+**Prompt work has hit diminishing returns here.** Six variants across two questions. The two
+changes that mattered were both *missing capabilities* (`scan` +3.0, `grab` +1.4 on the scripted
+baseline); every wording change was inside the noise. That is the same pattern as
+[[LDOOM-T-0008]] and [[LDOOM-T-0009]] and it is now the most robust finding in the project.
+
+**The gate's question is answered, and it is the wrong question.** "Is the teacher smarter than
+hand-written rules?" is No, on all three maps. But that was only ever a proxy for whether
+distillation is worth doing, and it misses the payoff the user actually identified: a student
+buys **decision rate**, not intelligence. LAYA runs at 5–8 Hz and skips 20–65 slots an episode; a
+student over 37 features runs in well under a millisecond and can act **every tic, 35 Hz**. We
+have measured that rate matters — skipped slots track directly with worse play.
+
+So the live question is no longer "is LAYA better than rules" but **"does the same policy, run
+six times more often, play better?"** That is cheap to answer and does not depend on the gate:
+~4,300 harvested rows are on disk, tagged with episode outcome, 36% of them from episodes
+scoring at or above 5. Filtered cloning on the good episodes, then a real-time comparison of
+student-at-35 Hz against LAYA-at-6 Hz and against the scripted policy, answers it directly.
+
+**Recommendation:** stop tuning deathmatch prompts; run that experiment instead.

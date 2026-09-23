@@ -133,12 +133,17 @@ class TestLoadoutNarration:
                                    weapons_held=(2, 3)))
         assert "shotgun" in text
 
-    def test_carrying_nothing_else_is_stated(self):
-        from laya_doom.state import narrate
+    def test_a_single_weapon_says_nothing_in_prose(self):
+        """Measured: the player held a pistol and nothing else in 100% of 1436
+        harvested ticks. With no choice to make, the sentence was pure cost -- and
+        the deathmatch prompt sits right on the 512-token formatting limit."""
+        from laya_doom.state import narrate, serialize
 
-        text = narrate(observation(label("Blood"), weapon_slot=2, weapon_ammo=50.0,
-                                   weapons_held=(2,)))
-        assert "not carrying any other weapon" in text
+        obs = observation(label("Blood"), weapon_slot=2, weapon_ammo=50.0, weapons_held=(2,))
+        assert "holding" not in narrate(obs)
+        # ...but the structured field survives, because a student still needs it.
+        assert serialize(obs)["weapon_in_hand"] == "pistol"
+        assert "other_weapons_you_are_carrying" not in serialize(obs)
 
     def test_other_weapons_reach_the_serialized_state(self):
         from laya_doom.state import serialize

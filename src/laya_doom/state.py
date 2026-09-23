@@ -396,16 +396,20 @@ def loadout_sentences(observation: Observation) -> list[str]:
     """
     if observation.weapon_slot is None:
         return []
-    said = [
-        f"You are holding the {observation.weapon_name} with "
-        f"{int(observation.weapon_ammo or 0)} shots left."
-    ]
+
     others = [name for name in observation.weapon_names_held if name != observation.weapon_name]
-    said.append(
-        f"You are also carrying: {', '.join(others)}."
-        if others
-        else "You are not carrying any other weapon, so switching is not possible."
-    )
+    if not others:
+        # Nothing to decide, so nothing to say. Measured: the player held a pistol
+        # and nothing else in 100% of 1436 harvested ticks, so this text was pure
+        # cost -- and the deathmatch prompt runs right at the 512-token formatting
+        # limit, where ~115 chars of dead weight is what tips it into a 422.
+        said: list[str] = []
+    else:
+        said = [
+            f"You are holding the {observation.weapon_name} with "
+            f"{int(observation.weapon_ammo or 0)} shots left.",
+            f"You are also carrying: {', '.join(others)}.",
+        ]
     if (observation.weapon_ammo or 0) <= 5:
         distance = observation.nearest_item("ammunition")
         said.append(
@@ -505,11 +509,14 @@ def serialize(observation: Observation) -> dict:
     if observation.has_goal:
         state["percent_of_the_way_to_the_goal"] = round(observation.progress * 100)
     if observation.weapon_slot is not None:
+        # The structured fields stay -- they cost ~7 tokens and a student needs them
+        # to know what is in hand. It is the *prose* that was expensive, and it only
+        # appears when there is actually a weapon choice to make.
         state["weapon_in_hand"] = observation.weapon_name
         state["shots_left_for_this_weapon"] = int(observation.weapon_ammo or 0)
-        state["other_weapons_you_are_carrying"] = [
-            name for name in observation.weapon_names_held if name != observation.weapon_name
-        ]
+        others = [name for name in observation.weapon_names_held if name != observation.weapon_name]
+        if others:
+            state["other_weapons_you_are_carrying"] = others
     if observation.armor is not None:
         state["armour"] = int(observation.armor)
     for kind in ("health", "ammunition", "weapon"):
