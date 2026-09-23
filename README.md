@@ -245,8 +245,30 @@ fixture set, and yet scores roughly **3× better in real episodes**:
 The oracle asserted that advancing is for "aimed but far away" shots. In play its value is
 that *moving repositions the player and finds enemies*, which a fixture — a single frozen
 tick — cannot express. The oracle was measuring the wrong thing, so it is reported rather than
-obeyed. Worth noting that `advance` is chosen only ~7% of the time, so the gain is not purely
-forward movement: the whole answer mix shifted, with `scan` rising from 16% to 24%.
+obeyed. Worth noting that `advance` is chosen only ~3-7% of the time, so the gain is not purely
+forward movement: the whole answer mix shifted, with `scan` rising from 16% to ~23%.
+
+### Do not trim the question text
+
+Question text is re-tokenised on every tick, so shortening it looks like free latency. It is
+real — an interleaved A/B, alternating both forms request-by-request on identical states so
+ambient load falls on both equally, measured a 30% smaller payload buying **10.6 ms** (p50
+84.2 ms verbose vs 73.6 ms terse, pooled sd 10.3 ms).
+
+It is also a bad trade:
+
+| turn question | mean score | kills | `advance` | `scan` | `hold` |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| verbose (shipped) | **+13.0** (sd 6.2) | 14.0 | 3% | 23% | 20% |
+| terse | +5.6 (sd 4.6) | 6.6 | **0%** | 14% | 33% |
+
+The short form scores less than half, and the distribution shows why: it never picks `advance`
+at all and scans far less, with `hold` absorbing the difference. Phrases like *"so walk forward
+to close the distance"* and *"keep turning to search the room for one"* are what make those
+options reachable; compressed to *"walk closer"* and *"keep turning to search"*, the model stops
+choosing them and goes back to standing still — the same failure the original `hold` criterion
+caused. 194 characters buy 7 points of score for 10 ms. `TURN_APPROACH_TERSE` is kept in
+`questions.py` as the record of that experiment, not as a config to switch to.
 
 ### Honest scoreboard
 

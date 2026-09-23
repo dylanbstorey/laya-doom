@@ -122,17 +122,25 @@ TURN_APPROACH = {
     },
 }
 
-# The same five options, written short. Question text is re-tokenised on every tick,
-# so criteria length is paid for continuously. An interleaved A/B -- alternating the
-# two forms request-by-request on identical states, so ambient machine load falls on
-# both equally -- measured a 30% smaller payload (656 -> 462 chars) buying 10.6 ms:
+# The same five options, written short -- and NOT shipped. Kept because the result is
+# worth preserving.
+#
+# Trimming looked free. Question text is re-tokenised every tick, and an interleaved
+# A/B (alternating forms request-by-request on identical states, so ambient machine
+# load falls on both equally) measured a 30% smaller payload buying a real 10.6 ms:
 # p50 84.2 ms verbose against 73.6 ms terse, pooled sd 10.3 ms.
 #
-# That is a real but modest effect, and worth recording because the first reading of
-# it was wrong. Episode latency had risen to ~98 ms p50 and this was attributed to
-# the longer question; in fact most of that was other work on the machine, which the
-# separate before/after runs never controlled for. Interleaving is what separated the
-# two, and the honest split is ~10 ms of question length on top of a noisy baseline.
+# It is not free. Over 5 episodes each, terse scored **+5.6 against verbose's +13.0**
+# -- less than half, a 7.4 point gap against standard deviations of 4.6 and 6.2. The
+# answer distribution says why: terse picked `advance` **0%** of the time against 3%,
+# and `scan` 14% against 23%, with `hold` absorbing the difference (33% vs 20%). The
+# longer criteria are not padding. Phrases like "so walk forward to close the
+# distance" and "keep turning to search the room for one" are what make those options
+# reachable at all; compressed to "walk closer" and "keep turning to search", the
+# model stops choosing them and reverts to standing still.
+#
+# 194 characters buy 7 points of score for 10 ms. That is the trade, and it is not
+# close.
 
 TURN_APPROACH_TERSE = {
     "type": "choice",

@@ -136,5 +136,39 @@ Trimming input tokens is worth doing regardless, and the user confirmed that, so
 `TURN_APPROACH_TERSE` ships once its accuracy is verified — a shorter question is re-tokenised
 on every tick either way.
 
-**Still open:** switch `BATTERY` to the terse variant after checking accuracy holds; refresh the
-README scoreboard with the five-option numbers.
+### 2026-09-23 — trimming the question text was rejected on measurement
+
+The user asked to trim input tokens and I was about to. **The data said no**, so verbose ships.
+
+| turn question | mean score | kills | `advance` | `scan` | `hold` |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| verbose (shipped) | **+13.0** (sd 6.2) | 14.0 | 3% | 23% | 20% |
+| terse | +5.6 (sd 4.6) | 6.6 | **0%** | 14% | 33% |
+
+The latency saving is real and was verified properly: an interleaved A/B, alternating both forms
+request-by-request on identical states so ambient load falls on both equally, gives p50 84.2 ms
+verbose against 73.6 ms terse for a 30% smaller payload — **10.6 ms**. Terse also scored *higher*
+confidence (0.105 vs 0.073), though lower fixture accuracy (75% vs 85%).
+
+It still loses badly in play, and the answer distribution explains it: terse picks `advance`
+**0%** of the time and scans 14% against 23%, with `hold` absorbing the difference. The verbose
+criteria are load-bearing — "so walk forward to close the distance" and "keep turning to search
+the room for one" are what make those options reachable. Compressed, the model reverts to
+standing still, which is exactly the failure the original `hold` criterion caused. 194 characters
+buy 7 points of score for 10 ms.
+
+`TURN_APPROACH_TERSE` is kept in `questions.py` as the record of the experiment, not as a switch.
+
+**Final scoreboard, 5 episodes per policy:**
+
+| policy | mean score | kills | decisions/s | p50 | skipped |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| laya | **+8.0** | 9.0 | 5.2 | 98.5 ms | 65 |
+| scripted | +12.4 | 13.4 | 8.8 | — | 0 |
+| random | +1.0 | 2.0 | 8.8 | — | 0 |
+
+LAYA at **65%** of the scripted reference, up from 31% before this task and 100%-of-a-broken-0.3
+before `scan` existed. Verified over the websocket: 156/156 decisions logged, 52 ticks flagged
+sweeping, all five turn options exercised, 6 sweeps with 3 interrupted by spotting an enemy.
+
+**Task complete.**
