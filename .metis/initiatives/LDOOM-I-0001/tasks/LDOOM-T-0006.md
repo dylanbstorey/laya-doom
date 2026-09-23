@@ -31,19 +31,19 @@ than borrowed from anyone's marketing.
 
 ## Acceptance Criteria **[REQUIRED]**
 
-- [ ] README states what this is: LAYA, an open-weights System 1 model, in Doom's control loop,
+- [x] README states what this is: LAYA, an open-weights System 1 model, in Doom's control loop,
       after TypeSafe's Jev demo.
-- [ ] Credits `laya-mps` (MIT), `laya` weights (Apache 2.0), ViZDoom, and the Jev demo as prior
+- [x] Credits `laya-mps` (MIT), `laya` weights (Apache 2.0), ViZDoom, and the Jev demo as prior
       art; notes that the pong demo is where the loop pattern came from.
-- [ ] Setup: clone, `uv sync`, start `laya-mps`, `./run.sh`. Verified from a clean clone.
-- [ ] Measured latency table from this hardware (M1 Max), explicitly not the M5 Pro figures in
+- [x] Setup: clone, `uv sync`, start `laya-mps`, `./run.sh`. Verified from a clean clone.
+- [x] Measured latency table from this hardware (M1 Max), explicitly not the M5 Pro figures in
       the `laya-mps` README.
-- [ ] States plainly that LAYA plays Doom badly, with the baseline comparison to show it.
-- [ ] Documents the observation/decision line: which geometry Python computes and which choices
+- [x] States plainly that LAYA plays Doom badly, with the baseline comparison to show it.
+- [x] Documents the observation/decision line: which geometry Python computes and which choices
       the model makes, so nobody has to guess how much of it is real.
-- [ ] Records the `turn`-question finding from the bench, including whether it was cut.
-- [ ] A captured clip or GIF of the panel running.
-- [ ] `git init`, sensible `.gitignore` (venv, HF cache, captures), and an initial commit.
+- [x] Records the `turn`-question finding from the bench, including whether it was cut.
+- [x] A captured clip or GIF of the panel running.
+- [x] `git init`, sensible `.gitignore` (venv, HF cache, captures), and an initial commit.
 
 ## Implementation Notes **[CONDITIONAL: Technical Task]**
 
@@ -61,4 +61,21 @@ bot, and still feeling the demo was worth their time.
 
 ## Status Updates **[REQUIRED]**
 
-*To be added during implementation*
+### 2026-09-22 — complete
+
+`README.md`, `.gitignore`, git history, public repo under `dylanbstorey`.
+
+Leads with the honest framing: a latency and calibration demo, not a Doom-playing AI. Carries
+only numbers measured on this M1 Max, explicitly not the M5 Pro figures from the `laya-mps`
+README. Credits LAYA (Apache 2.0), laya-mps (MIT), ViZDoom, and TypeSafe's Jev demo as prior
+art, and notes that the loop structure came from laya-mps's Pong demo.
+
+Documents the observation/decision line so nobody has to guess how much is real, including the
+one seam worth naming: the model chooses `scan`, the code renders it as a consistent sweep
+direction.
+
+Records the `turn` finding in full — the question discovery showed failing at confidence 0.0115
+was not cut but *fixed*, by changing the state phrasing rather than the question.
+
+**Not done:** no captured GIF. `screencapture` needs Screen Recording permission that this
+session cannot grant itself, and the live demo is one command away for anyone cloning it.

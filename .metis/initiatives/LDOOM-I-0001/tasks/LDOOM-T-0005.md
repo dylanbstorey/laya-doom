@@ -31,16 +31,16 @@ text, the chosen answer, its probability distribution and its latency is the dem
 
 ## Acceptance Criteria **[REQUIRED]**
 
-- [ ] FastAPI app serves a static page and a WebSocket stream (REQ-006).
-- [ ] Doom frame rendered live as JPEG to a canvas.
-- [ ] Panel shows the exact state text sent to the model that tick — verbatim, not a summary.
-- [ ] Each answer shown with its full distribution as bars, not just the winning label (REQ-007).
-- [ ] Low-confidence answers are visually distinct, so "the model does not know" reads as a
+- [x] FastAPI app serves a static page and a WebSocket stream (REQ-006).
+- [x] Doom frame rendered live as JPEG to a canvas.
+- [x] Panel shows the exact state text sent to the model that tick — verbatim, not a summary.
+- [x] Each answer shown with its full distribution as bars, not just the winning label (REQ-007).
+- [x] Low-confidence answers are visually distinct, so "the model does not know" reads as a
       first-class outcome rather than looking like a rendering glitch.
-- [ ] Rolling latency readout: p50, p95, last — labelled as measured client-side wall clock.
-- [ ] Start / pause / restart controls; restart bumps the generation counter.
-- [ ] Episode score and baseline comparison visible (NFR-004).
-- [ ] Works at laptop width; no build step, no framework, no CDN.
+- [x] Rolling latency readout: p50, p95, last — labelled as measured client-side wall clock.
+- [x] Start / pause / restart controls; restart bumps the generation counter.
+- [x] Episode score and baseline comparison visible (NFR-004).
+- [x] Works at laptop width; no build step, no framework, no CDN.
 
 ## Implementation Notes **[CONDITIONAL: Technical Task]**
 
@@ -64,4 +64,24 @@ cannot keep up. The game clock must never wait on the UI.
 
 ## Status Updates **[REQUIRED]**
 
-*To be added during implementation*
+### 2026-09-22 — complete
+
+`src/laya_doom/server.py`, `static/index.html`, `panel.css`, `panel.js`, `run.sh`.
+Verified end to end over the websocket: 40 ticks, every one carrying a frame, 11 fresh
+decisions, both answers with full distributions, keys and observation text present.
+
+**Decisions:**
+
+- Frame and decision record travel in the **same message**, so the panel can never show a
+  decision next to a frame it did not come from. A one-frame skew would make every screenshot
+  subtly wrong and be very hard to notice.
+- The loop owns ViZDoom and is synchronous, so it runs on a worker thread and publishes into a
+  bounded queue that **drops its oldest entry when full**. The game clock must never wait on a
+  browser.
+- Answers only re-render when a reply actually lands. Between replies the latch is coasting on
+  the previous decision, and redrawing would imply decisions are arriving at 35 Hz when they
+  arrive at 8.75 Hz.
+- Frames stream at Doom's 35 fps while decisions land at 8.75/s — roughly 12 KB JPEG per frame
+  over loopback, which is free.
+- Low confidence (< 0.15) gets a dashed amber border and an explicit sentence. [[LDOOM-T-0003]]
+  cut the only `score` question, so the panel renders `noul` and `choice` only.
