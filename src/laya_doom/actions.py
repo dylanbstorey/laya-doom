@@ -20,13 +20,31 @@ FIRE_THRESHOLD = 0.5
 # fixed direction sweeps the full room, which is what searching means when enemies
 # can come from anywhere. Alternating would stall the view in one arc.
 SCAN_DIRECTION = "right"
-TURN_BUTTONS = {"left": "TURN_LEFT", "right": "TURN_RIGHT", "scan": "TURN_RIGHT"}
 ATTACK_BUTTON = "ATTACK"
-
-# `advance` is the model deciding to close distance on a target it is already
-# aimed at. Doom moves 3.3 units/tic, so this is a slow commitment, not a dash.
 FORWARD_BUTTON = "MOVE_FORWARD"
-MOVE_ANSWERS = {"advance"}
+
+# Every answer any battery can give, mapped to the one button that executes it.
+# A single table across scenarios: the names do not collide, and an answer whose
+# button the current map does not expose is simply inert (see from_answers).
+#
+# `scan` resolves to a single consistent direction because searching means sweeping
+# an arc; alternating would stall the view inside it. `advance` is the model
+# choosing to close distance -- Doom moves 3.3 units/tic, so a slow commitment.
+ANSWER_BUTTONS: dict[str, str | None] = {
+    # defend_the_center
+    "left": "TURN_LEFT",
+    "right": "TURN_RIGHT",
+    "scan": "TURN_RIGHT",
+    "advance": FORWARD_BUTTON,
+    "hold": None,
+    # deadly_corridor
+    "aim_left": "TURN_LEFT",
+    "aim_right": "TURN_RIGHT",
+    "dodge_left": "MOVE_LEFT",
+    "dodge_right": "MOVE_RIGHT",
+    "retreat": "MOVE_BACKWARD",
+    "stand": None,
+}
 
 
 def button_names(game: Any) -> list[str]:
@@ -50,11 +68,7 @@ def from_answers(
     index = {name: position for position, name in enumerate(buttons)}
     if fire and ATTACK_BUTTON in index:
         action[index[ATTACK_BUTTON]] = 1
-    if turn in MOVE_ANSWERS:
-        if FORWARD_BUTTON in index:
-            action[index[FORWARD_BUTTON]] = 1
-        return action
-    wanted = TURN_BUTTONS.get(turn)
+    wanted = ANSWER_BUTTONS.get(turn)
     if wanted and wanted in index:
         action[index[wanted]] = 1
     return action
@@ -73,9 +87,11 @@ def from_decision(
     bench measured 94% specificity at this threshold.
     """
     fire_answer = decision.get("fire")
-    turn_answer = decision.get("turn")
+    # `turn` in defend_the_center, `move` in deadly_corridor -- both name the single
+    # non-fire action for the tick, and both resolve through ANSWER_BUTTONS.
+    move_answer = decision.get("turn") or decision.get("move")
     return from_answers(
         buttons,
         fire=bool(fire_answer and float(fire_answer.value) >= fire_threshold),
-        turn=str(turn_answer.value) if turn_answer else "hold",
+        turn=str(move_answer.value) if move_answer else "hold",
     )

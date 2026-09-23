@@ -145,10 +145,18 @@ class Observation:
     killcount: float = 0.0
     screen_width: int = 320
     incoming_projectiles: int = 0
+    # Maps with a destination (deadly_corridor's vest at x=1312) report how far
+    # along it the player is. None on maps that are not going anywhere.
+    progress: float | None = None
+    distance_to_goal: float | None = None
 
     @property
     def nearest(self) -> EnemySighting | None:
         return self.enemies[0] if self.enemies else None
+
+    @property
+    def has_goal(self) -> bool:
+        return self.progress is not None
 
     @property
     def crosshair_target(self) -> EnemySighting | None:
@@ -194,6 +202,8 @@ def observe(
     player: tuple[float, float] | None = None,
     max_enemies: int = MAX_ENEMIES_DESCRIBED,
     tolerance_px: int = CROSSHAIR_TOLERANCE_PX,
+    goal_x: float | None = None,
+    position_x: float | None = None,
 ) -> Observation:
     """Build an ``Observation`` from label dicts (live or recorded)."""
     labels = list(labels)
@@ -211,6 +221,11 @@ def observe(
     enemies.sort(key=lambda sighting: sighting.distance)
     projectiles = sum(1 for label in labels if label["name"] in PROJECTILES)
 
+    progress = distance_to_goal = None
+    if goal_x is not None and position_x is not None and goal_x:
+        progress = max(0.0, min(1.0, position_x / goal_x))
+        distance_to_goal = max(0.0, goal_x - position_x)
+
     return Observation(
         health=health,
         ammo=ammo,
@@ -218,6 +233,8 @@ def observe(
         killcount=killcount,
         screen_width=screen_width,
         incoming_projectiles=projectiles,
+        progress=progress,
+        distance_to_goal=distance_to_goal,
     )
 
 
@@ -227,6 +244,7 @@ def from_game_state(
     *,
     max_enemies: int = MAX_ENEMIES_DESCRIBED,
     tolerance_px: int = CROSSHAIR_TOLERANCE_PX,
+    goal_x: float | None = None,
 ) -> Observation | None:
     """Adapt a live ViZDoom ``GameState``. Returns ``None`` when the episode ended."""
     if state is None:
@@ -253,6 +271,8 @@ def from_game_state(
         player=(variables.get("POSITION_X", 0.0), variables.get("POSITION_Y", 0.0)) if "POSITION_X" in variables else None,
         max_enemies=max_enemies,
         tolerance_px=tolerance_px,
+        goal_x=goal_x,
+        position_x=variables.get("POSITION_X"),
     )
 
 
@@ -275,6 +295,29 @@ def from_fixture(
     )
 
 
+def journey_phrase(observation: Observation) -> str:
+    """How far along the map's goal the player is, in words.
+
+    Percentages are the one number this model reads reliably here, so the phrase
+    carries both the plain-language distance and the figure.
+    """
+    if not observation.has_goal:
+        return ""
+    remaining = observation.distance_to_goal or 0.0
+    if remaining < 120:
+        how_far = "almost there"
+    elif remaining < 400:
+        how_far = "not much further"
+    elif remaining < 800:
+        how_far = "still a long way off"
+    else:
+        how_far = "a very long way off"
+    return (
+        f"The green vest at the end of the corridor is {how_far}: you are "
+        f"{observation.progress * 100:.0f}% of the way there."
+    )
+
+
 def narrate(observation: Observation) -> str:
     """The sentence that does the work.
 
@@ -282,7 +325,12 @@ def narrate(observation: Observation) -> str:
     stated in plain words, because that is the form this model can act on.
     """
     nearest = observation.nearest
+    journey = journey_phrase(observation)
+
     if nearest is None:
+        if observation.has_goal:
+            # On a map with somewhere to be, an empty view means the way is clear.
+            return f"{journey} No enemy is in sight, so the way ahead is clear."
         # Phrased so that searching is the obviously available move. The previous
         # wording ("your crosshair is on empty space") described the situation
         # without suggesting that anything could be done about it, and the model
@@ -323,6 +371,8 @@ def narrate(observation: Observation) -> str:
         sentences.append("You are badly hurt.")
     if observation.ammo <= 0:
         sentences.append("You are out of ammunition and cannot shoot.")
+    if journey:
+        sentences.append(journey)
     return " ".join(sentences)
 
 
@@ -341,6 +391,8 @@ def serialize(observation: Observation) -> dict:
         "enemies_in_sight": len(observation.enemies),
         "an_enemy_is_lined_up_with_your_crosshair": observation.crosshair_target is not None,
     }
+    if observation.has_goal:
+        state["percent_of_the_way_to_the_goal"] = round(observation.progress * 100)
     if nearest is not None:
         state["nearest_enemy"] = {
             "what": plain_name(nearest.name),

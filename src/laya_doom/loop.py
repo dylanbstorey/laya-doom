@@ -281,6 +281,7 @@ class DecisionLoop:
         use_thread: bool = True,
         crosshair_tolerance_px: int = 0,
         sweep_ms: float = SWEEP_MS,
+        goal_x: float | None = None,
     ) -> None:
         self.game = game
         self.client = client
@@ -290,6 +291,7 @@ class DecisionLoop:
         self.interval_ms = self._interval_tics * MS_PER_TIC
         self.fire_threshold = fire_threshold
         self.crosshair_tolerance_px = crosshair_tolerance_px
+        self.goal_x = goal_x
         self.clock = clock or MonotonicClock()
         # When False the loop does not sleep to fill an interval -- for tests and
         # for replaying an episode as fast as the model can answer.
@@ -477,7 +479,9 @@ class DecisionLoop:
 
     def _observe(self) -> Observation | None:
         observation = from_game_state(
-            self.game.get_state(), self.game, tolerance_px=self.crosshair_tolerance_px
+            self.game.get_state(), self.game,
+            tolerance_px=self.crosshair_tolerance_px,
+            goal_x=self.goal_x,
         )
         if observation is not None:
             self._last_killcount = observation.killcount

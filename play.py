@@ -18,33 +18,46 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from laya_doom.baselines import RandomClient, ScriptedClient  # noqa: E402
+from laya_doom import scenarios  # noqa: E402
+from laya_doom.baselines import (  # noqa: E402
+    AlwaysForwardClient,
+    CorridorScriptedClient,
+    RandomClient,
+    RandomCorridorClient,
+    ScriptedClient,
+)
 from laya_doom.client import LayaMpsClient  # noqa: E402
 from laya_doom.game import DEFAULT_SCENARIO, make_game  # noqa: E402
-from laya_doom.loop import DECISION_INTERVAL_MS, DecisionLoop, EpisodeResult  # noqa: E402
-from laya_doom.questions import BATTERY  # noqa: E402
+from laya_doom.loop import MS_PER_TIC, DecisionLoop, EpisodeResult  # noqa: E402
 
-POLICIES = ("laya", "scripted", "random")
+POLICIES = ("laya", "scripted", "random", "forward")
 
 
-def build_client(policy: str, url: str):
+def build_client(policy: str, url: str, scenario):
+    """Baselines differ per scenario, because the action spaces differ."""
+    corridor = scenario.has_goal
     if policy == "laya":
         return LayaMpsClient(url)
     if policy == "scripted":
-        return ScriptedClient()
-    return RandomClient()
+        return CorridorScriptedClient() if corridor else ScriptedClient()
+    if policy == "forward":
+        return AlwaysForwardClient()
+    return RandomCorridorClient() if corridor else RandomClient()
 
 
 def play(policy: str, args) -> list[EpisodeResult]:
-    client = build_client(policy, args.url)
+    scenario = scenarios.get(args.scenario)
+    client = build_client(policy, args.url, scenario)
+    interval = args.interval if args.interval else scenario.interval_tics * MS_PER_TIC
     results = []
     for episode in range(1, args.episodes + 1):
-        game = make_game(args.scenario, window=args.window, seed=args.seed + episode)
+        game = make_game(scenario, window=args.window, seed=args.seed + episode)
         loop = DecisionLoop(
-            game, client, BATTERY,
-            interval_ms=args.interval,
+            game, client, scenario.battery,
+            interval_ms=interval,
             fire_threshold=args.fire_threshold,
             real_time=not args.fast,
+            goal_x=scenario.goal_x,
         )
         try:
             result = loop.run_episode(max_ticks=args.max_ticks)
@@ -79,6 +92,12 @@ def report(all_results: dict[str, list[EpisodeResult]], interval_ms: float) -> N
             f"{sorted(latencies)[max(0, int(0.95 * len(latencies)) - 1)] if latencies else 0:8.1f} "
             f"{statistics.mean(r.skipped_slots for r in results):8.1f}"
         )
+    for policy in ("forward", "random"):
+        if policy in all_results and all_results[policy] and all_results.get("laya"):
+            laya = statistics.mean(r.score for r in all_results["laya"])
+            other = statistics.mean(r.score for r in all_results[policy])
+            verdict = "beats" if laya > other else "LOSES TO"
+            print(f"LAYA {verdict} the {policy} baseline: {laya:+.1f} vs {other:+.1f}")
     if "laya" in all_results and "scripted" in all_results and all_results["laya"] and all_results["scripted"]:
         laya = statistics.mean(r.score for r in all_results["laya"])
         scripted = statistics.mean(r.score for r in all_results["scripted"])
@@ -91,7 +110,8 @@ def main() -> None:
     parser.add_argument("--policy", choices=(*POLICIES, "all"), default="all")
     parser.add_argument("-n", "--episodes", type=int, default=2)
     parser.add_argument("--scenario", default=DEFAULT_SCENARIO)
-    parser.add_argument("--interval", type=float, default=DECISION_INTERVAL_MS)
+    parser.add_argument("--interval", type=float, default=None,
+                        help="ms between decisions; default is the scenario's own cadence")
     parser.add_argument("--fire-threshold", type=float, default=0.5)
     parser.add_argument("--max-ticks", type=int, default=None)
     parser.add_argument("--seed", type=int, default=100)
@@ -100,12 +120,21 @@ def main() -> None:
     parser.add_argument("--url", default="http://127.0.0.1:8000")
     args = parser.parse_args()
 
-    policies = POLICIES if args.policy == "all" else (args.policy,)
+    scenario = scenarios.get(args.scenario)
+    if args.policy == "all":
+        # `forward` only means anything on a map with somewhere to go.
+        policies = POLICIES if scenario.has_goal else tuple(p for p in POLICIES if p != "forward")
+    else:
+        policies = (args.policy,)
+    print(f"scenario: {scenario.name}  cadence: {scenario.interval_tics} tics  "
+          f"questions: {list(scenario.battery)}")
+    if scenario.notes:
+        print(f"  {scenario.notes}")
     all_results: dict[str, list[EpisodeResult]] = {}
     for policy in policies:
         print(f"\n{policy}:")
         all_results[policy] = play(policy, args)
-    report(all_results, args.interval)
+    report(all_results, args.interval or scenario.interval_tics * MS_PER_TIC)
 
 
 if __name__ == "__main__":

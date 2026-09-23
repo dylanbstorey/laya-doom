@@ -226,3 +226,113 @@ THREAT_VARIANTS = {
     "health": THREAT_HEALTH,
     "survival": THREAT_SURVIVAL,
 }
+
+
+# ---------------------------------------------------------------------------
+# deadly_corridor
+# ---------------------------------------------------------------------------
+# A different problem: navigation under fire. Reward is distance travelled toward
+# a vest 1312 units away, dying costs 100, and the scenario ships at doom_skill 5.
+# Walking forward blindly and dying partway scores ~+600, which is the bar.
+#
+# Seven options in one `choice` rather than separate aim and move questions, to
+# keep the battery at two questions. Latency is the binding constraint --
+# defend_the_center already runs at 5.2 decisions/sec against a possible 8.75 --
+# and a third question would cost more decisions than the finer control buys.
+# `fire` stays separate, so the model can shoot while doing any of these.
+#
+# Criteria are written out in full deliberately: the terse experiment in
+# TURN_APPROACH_TERSE cost more than half the score by making options unreachable.
+
+# v1, kept as the record of a question that could not work. `advance` read "No
+# enemy is blocking the way" -- and the corridor always has enemies in view, so the
+# option was unreachable by construction. The model obeyed: over two episodes it
+# chose aim_left 54%, aim_right 36%, hold 11%, advance **0%**, travelled **0%** of
+# the corridor and scored -116. A faithful reading of an impossible instruction.
+CORRIDOR_MOVE_BLOCKING = {
+    "type": "choice",
+    "instructions": (
+        "The player is fighting down a corridor toward a green vest at the far end. "
+        "Getting closer to the vest is the goal, but enemies along the corridor shoot back "
+        "and dying ends the run. Choose what the player should do right now."
+    ),
+    "criteria": {
+        "advance": "No enemy is blocking the way, so walk forward down the corridor toward the vest",
+        "hold": "An enemy is centred in the crosshair, so stand still and shoot it",
+        "aim_left": "An enemy is visible to the left of the crosshair, so turn left to aim at it",
+        "aim_right": "An enemy is visible to the right of the crosshair, so turn right to aim at it",
+        "dodge_left": "An enemy is shooting at the player, so sidestep to the left to avoid the shots",
+        "dodge_right": "An enemy is shooting at the player, so sidestep to the right to avoid the shots",
+        "retreat": "The player is badly hurt and about to die, so back away from the enemies",
+    },
+}
+
+# v2. Advancing is the default and the criteria are keyed on *threat*, not on
+# whether anything is visible at all. Distance is the discriminator the state
+# already reports well ("close", "right on top of you", "far away"), and the
+# instructions say plainly that standing still scores nothing -- which is literally
+# true here, since the reward is distance travelled.
+CORRIDOR_MOVE = {
+    "type": "choice",
+    "instructions": (
+        "The player is fighting down a long corridor toward a green vest at the far end. "
+        "Only getting closer to the vest scores points, so standing still achieves nothing and "
+        "walking forward is the normal thing to do. Stop to fight only when an enemy is close "
+        "enough to be a real threat. Enemies far down the corridor can be walked past."
+    ),
+    "criteria": {
+        "advance": "Walk forward toward the vest. This is the right choice unless an enemy is close enough to be an immediate threat",
+        "hold": "An enemy is centred in the crosshair right now, so stand still and shoot it",
+        "aim_left": "An enemy is close and to the left of the crosshair, so turn left to aim at it before moving on",
+        "aim_right": "An enemy is close and to the right of the crosshair, so turn right to aim at it before moving on",
+        "dodge_left": "An enemy is close and shooting at the player, so sidestep left to avoid the shots",
+        "dodge_right": "An enemy is close and shooting at the player, so sidestep right to avoid the shots",
+        "retreat": "The player is badly hurt and about to die, so back away from the enemies",
+    },
+}
+
+# v3. Four options. `dodge_left`, `dodge_right` and `retreat` were never chosen
+# once across either earlier run, so they were only ever costing tokens -- and
+# tokens are the binding constraint here: the seven-option question ran p50 126 ms
+# against a 143 ms interval and skipped most of its slots.
+CORRIDOR_MOVE_LEAN = {
+    "type": "choice",
+    "instructions": (
+        "The player is fighting down a long corridor toward a green vest at the far end. "
+        "Only getting closer to the vest scores points, so standing still achieves nothing and "
+        "walking forward is the normal thing to do. Stop only to shoot an enemy that is close."
+    ),
+    "criteria": {
+        "advance": "Walk forward toward the vest, which is right unless an enemy is close enough to be an immediate threat",
+        "hold": "An enemy is centred in the crosshair right now, so stand still and shoot it",
+        "aim_left": "An enemy is close and to the left of the crosshair, so turn left to aim at it",
+        "aim_right": "An enemy is close and to the right of the crosshair, so turn right to aim at it",
+    },
+}
+
+# v4. Two options: keep walking, or stop and shoot. The cheapest possible question
+# for this map, and a fair test of whether aiming is worth its latency at all --
+# the blind "walk forward and shoot" baseline scores ~528 without aiming once.
+CORRIDOR_MOVE_BINARY = {
+    "type": "choice",
+    "instructions": (
+        "The player is walking down a long corridor toward a green vest at the far end, with "
+        "enemies along the way. Only getting closer to the vest scores points."
+    ),
+    "criteria": {
+        "advance": "Keep walking forward toward the vest",
+        "hold": "An enemy is close and in the way, so stop and shoot it",
+    },
+}
+
+CORRIDOR_VARIANTS = {
+    "blocking": CORRIDOR_MOVE_BLOCKING,
+    "threat": CORRIDOR_MOVE,
+    "lean": CORRIDOR_MOVE_LEAN,
+    "binary": CORRIDOR_MOVE_BINARY,
+}
+
+CORRIDOR_BATTERY: dict[str, dict] = {
+    "fire": FIRE_QUESTION,
+    "move": CORRIDOR_MOVE,
+}
