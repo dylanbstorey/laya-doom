@@ -30,15 +30,23 @@ from laya_doom.client import LayaMpsClient  # noqa: E402
 from laya_doom.game import DEFAULT_SCENARIO, make_game  # noqa: E402
 from laya_doom.loop import MS_PER_TIC, DecisionLoop, EpisodeResult  # noqa: E402
 
-POLICIES = ("laya", "scripted", "random", "forward")
+POLICIES = ("laya", "student", "scripted", "random", "forward")
 
 
-def build_client(policy: str, url: str, scenario):
+def build_client(policy: str, url: str, scenario, student_path=None):
     """Baselines differ per scenario, because the action spaces differ."""
     corridor = scenario.has_goal
     if policy == "laya":
         return LayaMpsClient(url)
+    if policy == "student":
+        from laya_doom.student import StudentClient
+
+        return StudentClient(student_path)
     if policy == "scripted":
+        if scenario.name == "deathmatch":
+            from laya_doom.baselines import DeathmatchScriptedClient
+
+            return DeathmatchScriptedClient()
         return CorridorScriptedClient() if corridor else ScriptedClient()
     if policy == "forward":
         return AlwaysForwardClient()
@@ -47,8 +55,12 @@ def build_client(policy: str, url: str, scenario):
 
 def play(policy: str, args) -> list[EpisodeResult]:
     scenario = scenarios.get(args.scenario)
-    client = build_client(policy, args.url, scenario)
-    interval = args.interval if args.interval else scenario.interval_tics * MS_PER_TIC
+    client = build_client(policy, args.url, scenario, args.student)
+    # A student costs ~14 microseconds a decision, so it can afford to decide every
+    # tic. Letting it run at the teacher's 6-tic cadence would throw away the only
+    # advantage it has.
+    tics = args.interval_tics or (1 if policy == "student" else scenario.interval_tics)
+    interval = args.interval if args.interval else tics * MS_PER_TIC
     results = []
     for episode in range(1, args.episodes + 1):
         game = make_game(scenario, window=args.window, seed=args.seed + episode)
@@ -112,6 +124,10 @@ def main() -> None:
     parser.add_argument("--scenario", default=DEFAULT_SCENARIO)
     parser.add_argument("--interval", type=float, default=None,
                         help="ms between decisions; default is the scenario's own cadence")
+    parser.add_argument("--interval-tics", type=int, default=None,
+                        help="cadence in tics; a student defaults to 1 (every tic)")
+    parser.add_argument("--student", type=Path, default=Path("models/deathmatch_student.npz"),
+                        help="trained student weights for --policy student")
     parser.add_argument("--fire-threshold", type=float, default=0.5)
     parser.add_argument("--max-ticks", type=int, default=None)
     parser.add_argument("--seed", type=int, default=100)

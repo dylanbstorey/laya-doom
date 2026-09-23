@@ -13,3 +13,4 @@ bench/tuning.json
 .metis/metis.db
 _vizdoom.ini
 data/
+models/

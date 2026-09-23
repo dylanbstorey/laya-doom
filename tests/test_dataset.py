@@ -126,3 +126,51 @@ class TestSplitting:
         first, _ = load(path).split(seed=3)
         second, _ = load(path).split(seed=3)
         assert np.array_equal(first.episode_ids, second.episode_ids)
+
+
+class TestStudentRoundTrip:
+    """A trained student must load and answer without torch."""
+
+    def test_save_and_load_preserves_behaviour(self, tmp_path):
+        from laya_doom.student import Student, new
+
+        student = new(OPTIONS, hidden=16, seed=2)
+        features = np.random.default_rng(0).random(len(FEATURE_NAMES)).astype(np.float32)
+        before = student.forward(features)
+
+        path = tmp_path / "s.npz"
+        student.save(path)
+        after = Student.load(path).forward(features)
+
+        assert before[0] == pytest.approx(after[0])
+        assert np.allclose(before[1], after[1])
+
+    def test_move_distribution_is_a_distribution(self):
+        from laya_doom.student import new
+
+        student = new(OPTIONS, hidden=16, seed=1)
+        _, move = student.forward(np.zeros(len(FEATURE_NAMES), dtype=np.float32))
+        assert move.sum() == pytest.approx(1.0)
+        assert (move >= 0).all()
+
+    def test_client_answers_like_the_teacher(self):
+        from laya_doom.student import StudentClient, new
+
+        client = StudentClient(new(OPTIONS, hidden=16, seed=3))
+        decision = client.decide({"enemies_in_sight": 0, "health": 100, "ammunition": 20}, {})
+        assert decision["fire"].type == "noul"
+        assert decision["move"].type == "choice"
+        assert decision["move"].value in OPTIONS
+        assert 0.0 <= decision["fire"].value <= 1.0
+
+    def test_a_decision_is_far_faster_than_the_teacher(self):
+        """The whole point: LAYA p50 is 127 ms, so the loop skips slots. A student
+        has to be fast enough to decide every tic (28.6 ms) with room to spare."""
+        from laya_doom.student import StudentClient, new
+
+        client = StudentClient(new(OPTIONS, hidden=128, seed=4))
+        state = {"enemies_in_sight": 1, "health": 80, "ammunition": 20,
+                 "nearest_enemy": {"where": "to the left", "how_far": "close"}}
+        client.decide(state, {})  # warm
+        worst = max(client.decide(state, {}).latency_ms for _ in range(50))
+        assert worst < 5.0, f"{worst:.2f} ms is too slow to decide every tic"
