@@ -302,6 +302,71 @@ the 114.3 ms interval. Roughly 40% of its chances to act are spent waiting on in
 baselines answer instantly and never skip. That is what putting a real model in a real-time
 loop costs, and it is visible in the score rather than hidden.
 
+## Distilling the teacher
+
+A 22,000-parameter network trained on LAYA's decisions **outscores LAYA by 2.6x**, by
+being fast enough to decide every tic.
+
+| policy | mean score | kills | decisions/s | p50 | skipped slots |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| **student** (22k params) | **+6.2** | 2.6 | **35.0** | 0.1 ms | **0** |
+| scripted | +5.2 | 2.1 | 5.9 | — | 0 |
+| random | +2.9 | 1.4 | 5.9 | — | 0 |
+| **laya** (421M, the teacher) | **+2.4** | 1.0 | 5.3 | 127 ms | 9.5 |
+
+`deathmatch`, real time, 8 episodes each, same state and same latch for every policy.
+
+The student is *not* smarter than its teacher. It reproduces 87% of LAYA's argmax
+decisions and 95% of its trigger calls, and its answer marginals match the teacher's
+to within 0.003 on every one of nine options. It wins on **rate**: 35 decisions/sec
+against 5.3, and zero skipped slots against 9.5 per episode.
+
+The teacher, in real time, loses to random. That is the whole point of the table: a
+421M model that answers in 127 ms cannot hold a 35-tic-per-second control loop, and
+everything it knows is worth less than acting six times more often.
+
+### How
+
+**Harvest in lockstep.** `bench/harvest.py` runs episodes where the game does not
+advance while the model thinks, so the teacher is asked for its best decisions rather
+than its fastest. The difference is large: on `defend_the_center`, lockstep scored +13
+with 14 kills against real time's +1 with 2 kills. Collected 27,829 decisions over 258
+episodes, every row tagged with its episode's final score.
+
+**Keep the good runs.** The teacher's *mean* is unremarkable, but its best episodes
+reach +34. Training uses the top 35% of episodes — 12,625 rows — so the student is
+bounded by the teacher's best rather than its average.
+
+**Train on distributions, not labels.** The argmax view says LAYA uses four of nine
+options. The probability mass says otherwise: `advance` carries 10%, `dodge` 13%,
+`retreat` 7%, `grab` 2%. A KL loss against the distributions keeps all of it; hard
+labels would have thrown it away.
+
+**Feed it features, not text.** Encoding text is the cost that makes the teacher slow,
+so the student reads a 37-number vector built from the same `Observation` the prose is
+written from. A forward pass is 13.5 microseconds — about 74,000 Hz.
+
+```bash
+uv run python bench/harvest.py --scenario deathmatch --episodes 60
+uv run python bench/train_student.py --top-fraction 0.35
+uv run python play.py --scenario deathmatch --policy student
+```
+
+### What this does not show
+
+The student is a **faithful clone, not an improvement**. Held-out agreement is 87%, and
+where it differs from the teacher it is usually wrong, not better. Nothing here says a
+distilled model reasons better — only that a policy worth 127 ms is worth more at 0.1 ms.
+
+It is also **task-specific**. The student plays one map with one action space, and
+retraining is required for another. The teacher needed no training at all, which is the
+property the rest of this repo is about.
+
+And the gate that motivated all this **failed**: on every scenario tested, a hand-written
+policy reading the same state matched or beat LAYA. The student beats the scripted
+baseline here (+6.2 against +5.2), but by a margin inside one standard deviation. The
+robust claim is the one against the teacher, not the one against the rules.
+
 ## Running the tests
 
 ```bash
