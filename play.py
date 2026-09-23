@@ -31,6 +31,8 @@ from laya_doom.game import DEFAULT_SCENARIO, make_game  # noqa: E402
 from laya_doom.loop import MS_PER_TIC, DecisionLoop, EpisodeResult  # noqa: E402
 
 POLICIES = ("laya", "student", "scripted", "random", "forward")
+# Policies that answer in well under a tic and should be called inline.
+INSTANT_POLICIES = frozenset({"student", "scripted", "random", "forward"})
 
 
 def build_client(policy: str, url: str, scenario, student_path=None):
@@ -70,6 +72,12 @@ def play(policy: str, args) -> list[EpisodeResult]:
             fire_threshold=args.fire_threshold,
             real_time=not args.fast,
             goal_x=scenario.goal_x,
+            # A sub-millisecond policy is slower through a worker thread than it is
+            # inline: the handoff does not finish inside one tic, so the next slot
+            # finds a request still in flight and gets skipped. Measured at a 1-tic
+            # cadence, the student managed 17.6 decisions/sec and skipped 234 slots
+            # per episode purely to threading overhead.
+            use_thread=policy not in INSTANT_POLICIES,
         )
         try:
             result = loop.run_episode(max_ticks=args.max_ticks)
@@ -84,9 +92,9 @@ def play(policy: str, args) -> list[EpisodeResult]:
 
 def report(all_results: dict[str, list[EpisodeResult]], interval_ms: float) -> None:
     print("\n" + "=" * 78)
-    print("Episode scores. The scripted baseline reads the same state dict LAYA reads,")
-    print(f"at the same {interval_ms:.0f} ms cadence, through the same latch -- only the")
-    print("decision procedure differs.")
+    print("Episode scores. Every policy reads the same state dict through the same latch")
+    print("and the same button mapping. A student decides every tic because it can;")
+    print("LAYA decides on the scenario's cadence because that is as fast as it answers.")
     print("=" * 78)
     print(f"\n{'policy':10s} {'mean score':>11s} {'kills':>7s} {'decisions/s':>12s} "
           f"{'p50 ms':>8s} {'p95 ms':>8s} {'skipped':>8s}")
