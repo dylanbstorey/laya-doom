@@ -139,6 +139,14 @@ def stages() -> dict[str, list[Config]]:
             Config("scripted", policy="scripted"),
             Config("random", policy="random"),
         ],
+        "advance": [
+            Config("turn=scan (no forward)", turn_variant="scan"),
+            Config("turn=approach (forward)", turn_variant="approach"),
+        ],
+        "question length": [
+            Config("approach (verbose)", turn_variant="approach"),
+            Config("approach (terse)", turn_variant="approach_terse"),
+        ],
         "turn question": [
             Config("turn=criteria_led (waits)", turn_variant="criteria_led"),
             Config("turn=scan (searches)", turn_variant="scan"),

@@ -23,6 +23,11 @@ SCAN_DIRECTION = "right"
 TURN_BUTTONS = {"left": "TURN_LEFT", "right": "TURN_RIGHT", "scan": "TURN_RIGHT"}
 ATTACK_BUTTON = "ATTACK"
 
+# `advance` is the model deciding to close distance on a target it is already
+# aimed at. Doom moves 3.3 units/tic, so this is a slow commitment, not a dash.
+FORWARD_BUTTON = "MOVE_FORWARD"
+MOVE_ANSWERS = {"advance"}
+
 
 def button_names(game: Any) -> list[str]:
     """Available button names, e.g. ``["TURN_LEFT", "TURN_RIGHT", "ATTACK"]``."""
@@ -45,6 +50,10 @@ def from_answers(
     index = {name: position for position, name in enumerate(buttons)}
     if fire and ATTACK_BUTTON in index:
         action[index[ATTACK_BUTTON]] = 1
+    if turn in MOVE_ANSWERS:
+        if FORWARD_BUTTON in index:
+            action[index[FORWARD_BUTTON]] = 1
+        return action
     wanted = TURN_BUTTONS.get(turn)
     if wanted and wanted in index:
         action[index[wanted]] = 1

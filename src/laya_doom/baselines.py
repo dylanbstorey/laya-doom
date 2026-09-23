@@ -17,7 +17,7 @@ import time
 
 from .client import Answer, Decision
 
-TURN_OPTIONS = ("left", "right", "hold", "scan")
+TURN_OPTIONS = ("left", "right", "hold", "scan", "advance")
 
 
 def _certain(fire: bool, turn: str, latency_ms: float, model: str) -> Decision:
@@ -60,7 +60,9 @@ class ScriptedClient:
         else:
             where = str(nearest.get("where", ""))
             if nearest.get("lined_up_with_crosshair"):
-                turn = "hold"
+                # Aimed already: close the distance if the shot is long, else hold
+                # and shoot. Same reasoning the model is offered.
+                turn = "advance" if "far" in str(nearest.get("how_far", "")) else "hold"
             elif "left" in where:
                 turn = "left"
             elif "right" in where:

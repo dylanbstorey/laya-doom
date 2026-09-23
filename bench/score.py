@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from laya_doom.client import LayaMpsClient  # noqa: E402
 from laya_doom.questions import FIRE_VARIANTS, THREAT, TURN_VARIANTS  # noqa: E402
-from laya_doom.state import Observation, from_fixture, plain_name, serialize  # noqa: E402
+from laya_doom.state import FAR, Observation, from_fixture, plain_name, serialize  # noqa: E402
 
 FIXTURES = Path(__file__).parent / "fixtures"
 RESULTS = Path(__file__).parent / "results.md"
@@ -42,21 +42,27 @@ HALF_FOV_DEGREES = 45.0  # Doom's default field of view is 90 degrees
 def oracle(observation: Observation) -> dict:
     """The correct action, derived from the observation.
 
-    With nothing visible the right answer is to search. Variants that offer no
-    `scan` option are scored against `hold` instead, since that is the best answer
-    available to them -- otherwise they would be marked wrong for a choice they
-    were never offered.
+    With nothing visible the right answer is to search; aimed at something distant,
+    to close the distance. Variants are scored only against options they actually
+    offer -- a question with no `scan` or `advance` option falls back to `hold`
+    rather than being marked wrong for a choice it was never given.
     """
     if observation.nearest is None:
         turn = "scan"
     elif observation.nearest.in_crosshair:
-        turn = "hold"
+        # Aimed: close the distance on a long shot, otherwise stand and shoot.
+        turn = "advance" if observation.nearest.distance_phrase == FAR else "hold"
     else:
         turn = observation.nearest.side
     return {
         "fire": observation.crosshair_target is not None and observation.ammo > 0,
         "turn": turn,
     }
+
+
+def _expected_for(wanted: str, offered: set[str]) -> str:
+    """Fall back to the best option a variant actually offers."""
+    return wanted if wanted in offered else "hold"
 
 
 def situation(observation: Observation) -> str:
@@ -186,11 +192,9 @@ def summarise(records: list[dict]) -> dict:
             }
         for name, question in TURN_VARIANTS.items():
             key = f"turn_{name}"
-            offers_scan = "scan" in question["criteria"]
+            offered = set(question["criteria"])
             correct = [
-                row["answers"][key]["value"] == (
-                    row["expected"]["turn"] if offers_scan or row["expected"]["turn"] != "scan" else "hold"
-                )
+                row["answers"][key]["value"] == _expected_for(row["expected"]["turn"], offered)
                 for row in rows
             ]
             stats[key] = {
@@ -223,11 +227,8 @@ def per_situation_accuracy(records: list[dict], style: str, key: str, field: str
         if field == "fire":
             correct = (answer >= 0.5) == record["expected"][field]
         else:
-            offers_scan = "scan" in TURN_VARIANTS[key.removeprefix("turn_")]["criteria"]
-            wanted = record["expected"]["turn"]
-            if wanted == "scan" and not offers_scan:
-                wanted = "hold"
-            correct = answer == wanted
+            offered = set(TURN_VARIANTS[key.removeprefix("turn_")]["criteria"])
+            correct = answer == _expected_for(record["expected"]["turn"], offered)
         buckets.setdefault(record["situation"], []).append(correct)
     return {name: statistics.mean(values) for name, values in sorted(buckets.items())}
 

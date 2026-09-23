@@ -7,8 +7,10 @@ const ctx = canvas.getContext("2d");
 
 const LOW_CONFIDENCE = 0.15;   // below this the model is effectively guessing
 const SPARK_SAMPLES = 60;
+const LOG_LIMIT = 300;         // enough to scroll a whole episode, bounded so the DOM stays cheap
 const latencies = [];
 let budgetMs = 114;            // replaced by /api/status
+let logged = 0;
 
 const fmt = (value, digits = 0) =>
   value === null || value === undefined ? "—" : Number(value).toFixed(digits);
@@ -18,6 +20,50 @@ function drawFrame(base64) {
   const image = new Image();
   image.onload = () => ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
   image.src = `data:image/jpeg;base64,${base64}`;
+}
+
+// Every decision, newest first. The answers panel above shows only the current
+// one; this is the record of what the model has actually been doing.
+function logDecision(message) {
+  const fire = message.answers.find((a) => a.name === "fire");
+  const turn = message.answers.find((a) => a.name === "turn");
+  if (!fire && !turn) return;
+
+  const row = document.createElement("div");
+  row.className = message.sweeping ? "log-row fresh-sweep" : "log-row";
+
+  const tick = document.createElement("span");
+  tick.className = "log-tick";
+  tick.textContent = `#${message.tick}`;
+
+  const fireCell = document.createElement("span");
+  const firing = fire ? fire.value >= 0.5 : false;
+  fireCell.className = `log-fire ${firing ? "yes" : "no"}`;
+  fireCell.textContent = firing ? "FIRE" : "hold";
+
+  const turnCell = document.createElement("span");
+  const move = turn ? String(turn.value) : "—";
+  turnCell.className = `log-turn ${move}`;
+  turnCell.textContent = move;
+
+  const worst = Math.min(...message.answers.map((a) => a.confidence));
+  const conf = document.createElement("span");
+  conf.className = worst < LOW_CONFIDENCE ? "log-conf unsure" : "log-conf";
+  conf.textContent = message.answers
+    .map((a) => `${a.name[0]}=${a.confidence.toFixed(2)}`)
+    .join(" ");
+
+  const lat = document.createElement("span");
+  const ms = message.latency_ms;
+  lat.className = ms > budgetMs ? "log-lat over" : "log-lat";
+  lat.textContent = ms === null || ms === undefined ? "—" : `${ms.toFixed(0)}ms`;
+
+  row.append(tick, fireCell, turnCell, conf, lat);
+
+  const log = $("log");
+  log.prepend(row);
+  while (log.childElementCount > LOG_LIMIT) log.lastElementChild.remove();
+  $("log-count").textContent = ++logged;
 }
 
 function renderKeys(buttons, pressed) {
@@ -129,7 +175,8 @@ function onTick(message) {
   $("ammo").textContent = fmt(message.ammo);
   $("kills").textContent = fmt(message.kills);
   $("tick").textContent = message.tick;
-  renderKeys(["TURN_LEFT", "TURN_RIGHT", "ATTACK"], message.pressed);
+  renderKeys(message.buttons ?? ["TURN_LEFT", "TURN_RIGHT", "ATTACK"], message.pressed);
+  $("sweep").hidden = !message.sweeping;
 
   if (message.observation) $("observation").textContent = message.observation;
 
@@ -138,6 +185,7 @@ function onTick(message) {
   if (message.fresh && message.answers.length) {
     $("answers").replaceChildren(...message.answers.map(renderAnswer));
     renderLatency(message.latency_ms);
+    logDecision(message);
   }
 }
 
@@ -146,7 +194,13 @@ function onEpisode(message) {
   $("ep-score").textContent = fmt(message.mean_score, 2);
   $("ep-skipped").textContent = message.skipped;
   $("ep-stale").textContent = message.stale;
+  $("ep-sweeps").textContent =
+    message.sweeps_interrupted ? `${message.sweeps} (${message.sweeps_interrupted} cut short)` : message.sweeps;
   $("rate").textContent = fmt(message.decisions_per_second, 1);
+
+  // A new episode starts a fresh log; the old one stays scrolled above.
+  logged = 0;
+  $("log-count").textContent = 0;
 
   const item = document.createElement("li");
   item.textContent = `${message.policy} · ${message.summary}`;
@@ -191,6 +245,9 @@ $("stop").onclick = async () => {
 $("restart").onclick = () => post("/api/restart");
 $("policy").onchange = async (event) => {
   latencies.length = 0;
+  logged = 0;
+  $("log").replaceChildren();
+  $("log-count").textContent = 0;
   $("episodes").replaceChildren();
   await post(`/api/policy/${event.target.value}`);
   setStatus(`Policy: ${event.target.value}.`);

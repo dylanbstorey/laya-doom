@@ -26,6 +26,7 @@
       <span class="stat"><label>tick</label><b id="tick">&mdash;</b></span>
     </div>
     <div class="keys" id="keys"></div>
+    <p class="sweep" id="sweep" hidden>sweeping &mdash; committed to ~32&deg; in one direction</p>
     <div class="controls">
       <button id="start" class="primary">Start</button>
       <button id="stop">Pause</button>
@@ -55,12 +56,16 @@
     </div>
     <div id="spark" class="spark"></div>
 
+    <h2>Every decision <span class="hint">newest first; <span id="log-count">0</span> so far this episode</span></h2>
+    <div id="log" class="log"></div>
+
     <h2>Episodes</h2>
     <div class="latency">
       <span class="stat"><label>episodes</label><b id="ep-count">0</b></span>
       <span class="stat"><label>mean score</label><b id="ep-score">&mdash;</b></span>
       <span class="stat"><label>skipped slots</label><b id="ep-skipped">&mdash;</b></span>
       <span class="stat"><label>stale replies</label><b id="ep-stale">&mdash;</b></span>
+      <span class="stat"><label>sweeps</label><b id="ep-sweeps">&mdash;</b></span>
     </div>
     <ul id="episodes" class="episodes"></ul>
   </section>

@@ -303,3 +303,77 @@ class TestEpisodeResult:
         loop.close()
         for field in ["score=", "decisions=", "skipped=", "stale=", "errors=", "latency p50="]:
             assert field in summary
+
+
+def scan_decision(fire: float = 0.1) -> Decision:
+    return Decision(
+        answers={
+            "fire": Answer("fire", "noul", fire, {"true": fire, "false": 1 - fire}, 0.6),
+            "turn": Answer("turn", "choice", "scan", {"scan": 0.7}, 0.3),
+        },
+        latency_ms=62.0,
+    )
+
+
+class TestSweepCommitment:
+    """One decision interval turns only ~10.6 degrees at Doom's measured 2.64
+    deg/tic, and the model re-decides every interval, so an uncommitted `scan`
+    oscillates inside a narrow arc instead of searching the room."""
+
+    def test_a_sweep_covers_at_least_thirty_degrees(self):
+        from laya_doom.loop import SWEEP_TICS, TURN_DEGREES_PER_TIC
+
+        assert SWEEP_TICS * TURN_DEGREES_PER_TIC >= 30.0
+
+    def test_scan_survives_the_ordinary_interval_decay(self):
+        latch = ActionLatch(BUTTONS, interval_ms=100, sweep_ms=343)
+        latch.apply(scan_decision(), latch.generation, 0.0, fire_threshold=0.5)
+        turning = [0, 1, 0]
+        assert latch.current(0.0) == turning
+        # Past one interval, where a normal action would have decayed to neutral.
+        assert latch.current(150.0) == turning
+        assert latch.current(300.0) == turning
+
+    def test_the_sweep_ends_when_its_arc_is_done(self):
+        latch = ActionLatch(BUTTONS, interval_ms=100, sweep_ms=343)
+        latch.apply(scan_decision(), latch.generation, 0.0, fire_threshold=0.5)
+        assert latch.current(400.0) == [0, 0, 0]
+        assert latch.sweeping is False
+
+    def test_the_sweep_never_reverses_mid_arc(self):
+        """One sweep is one direction."""
+        latch = ActionLatch(BUTTONS, interval_ms=100, sweep_ms=343)
+        latch.apply(scan_decision(), latch.generation, 0.0, fire_threshold=0.5)
+        first = latch.current(0.0)
+        # More `scan` answers arrive mid-sweep; they continue it, not restart it.
+        latch.apply(scan_decision(), latch.generation, 120.0, fire_threshold=0.5)
+        latch.apply(scan_decision(), latch.generation, 240.0, fire_threshold=0.5)
+        assert latch.current(250.0) == first
+        assert latch.sweeps_started == 1, "a continuing sweep must not count as a new one"
+        assert latch.current(400.0) == [0, 0, 0], "and must not be extended indefinitely"
+
+    def test_spotting_an_enemy_interrupts_the_sweep(self):
+        """Finishing the arc first would cost the shot."""
+        latch = ActionLatch(BUTTONS, interval_ms=100, sweep_ms=343)
+        latch.apply(scan_decision(), latch.generation, 0.0, fire_threshold=0.5)
+        assert latch.sweeping
+
+        latch.apply(decision(fire=0.9, turn="left"), latch.generation, 100.0, fire_threshold=0.5)
+        assert latch.sweeping is False
+        assert latch.sweeps_interrupted == 1
+        assert latch.current(100.0) == [1, 0, 1], "the aim answer must take over at once"
+
+    def test_restarting_an_episode_clears_a_sweep(self):
+        latch = ActionLatch(BUTTONS, interval_ms=100, sweep_ms=343)
+        latch.apply(scan_decision(), latch.generation, 0.0, fire_threshold=0.5)
+        latch.bump_generation()
+        assert latch.sweeping is False
+        assert latch.current(10.0) == [0, 0, 0]
+
+    def test_sweeps_are_reported_on_the_episode(self):
+        client = StubClient({"fire": 0.1, "turn": "scan"})
+        _game, loop = build_loop(client, ticks_until_done=60)
+        result = loop.run_episode()
+        loop.close()
+        assert result.sweeps > 0
+        assert "sweeps=" in result.summary()

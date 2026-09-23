@@ -4,14 +4,14 @@ level: task
 title: "Browser decision panel UI"
 short_code: "LDOOM-T-0005"
 created_at: 2026-09-23T02:45:36.186167+00:00
-updated_at: 2026-09-23T02:45:36.186167+00:00
+updated_at: 2026-09-23T03:34:03.552566+00:00
 parent: LDOOM-I-0001
 blocked_by: []
 archived: false
 
 tags:
   - "#task"
-  - "#phase/todo"
+  - "#phase/active"
 
 
 exit_criteria_met: false
@@ -29,7 +29,9 @@ initiative_id: LDOOM-I-0001
 Make the model's reasoning legible. A video of Doom proves nothing; the frame *beside* the state
 text, the chosen answer, its probability distribution and its latency is the demo.
 
-## Acceptance Criteria **[REQUIRED]**
+## Acceptance Criteria
+
+**[REQUIRED]**
 
 - [x] FastAPI app serves a static page and a WebSocket stream (REQ-006).
 - [x] Doom frame rendered live as JPEG to a canvas.

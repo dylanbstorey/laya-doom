@@ -15,6 +15,11 @@ import vizdoom as vzd
 
 DEFAULT_SCENARIO = "defend_the_center"
 
+# defend_the_center.cfg exposes only TURN_LEFT, TURN_RIGHT and ATTACK. Movement is
+# added on top so the model can close on a distant target: measured at 3.3 units
+# per tic, against an arena radius of about 812.
+EXTRA_BUTTONS = [vzd.Button.MOVE_FORWARD]
+
 GAME_VARIABLES = [
     vzd.GameVariable.HEALTH,
     vzd.GameVariable.AMMO2,
@@ -36,6 +41,9 @@ def make_game(
     game.set_screen_format(vzd.ScreenFormat.RGB24)
     # The label buffer is how enemies are located at all -- see state.py.
     game.set_labels_buffer_enabled(True)
+    for button in EXTRA_BUTTONS:
+        if button not in game.get_available_buttons():
+            game.add_available_button(button)
     game.set_available_game_variables(GAME_VARIABLES)
     if seed is not None:
         game.set_seed(seed)

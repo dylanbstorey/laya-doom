@@ -10,18 +10,19 @@ States per style: 40.
 
 | Question | prose accuracy | prose confidence | degrees accuracy | degrees confidence |
 | --- | ---: | ---: | ---: | ---: |
-| `fire_statement` | 50% | 0.062 | 90% | 0.213 |
-| `fire_question` | 95% | 0.335 | 88% | 0.339 |
-| `fire_waste` | 45% | 0.098 | 98% | 0.191 |
-| `turn_directive` | 60% | 0.050 | 32% | 0.008 |
-| `turn_terse` | 48% | 0.074 | 18% | 0.019 |
-| `turn_criteria_led` | 98% | 0.168 | 52% | 0.037 |
-| `turn_scan` | 100% | 0.125 | 57% | 0.038 |
-| `turn_scan_urgent` | 100% | 0.094 | 50% | 0.016 |
+| `fire_statement` | 50% | 0.075 | 90% | 0.213 |
+| `fire_question` | 95% | 0.330 | 88% | 0.339 |
+| `fire_waste` | 45% | 0.105 | 98% | 0.191 |
+| `turn_directive` | 85% | 0.039 | 32% | 0.008 |
+| `turn_terse` | 48% | 0.066 | 18% | 0.019 |
+| `turn_criteria_led` | 98% | 0.161 | 52% | 0.037 |
+| `turn_scan` | 100% | 0.156 | 57% | 0.038 |
+| `turn_scan_urgent` | 100% | 0.127 | 50% | 0.016 |
+| `turn_approach` | 85% | 0.073 | 35% | 0.026 |
 
 ## Threat, which has no crisp oracle
 
-- `prose`: mean score 1.12 when hurt vs 0.92 when healthy (confidence 0.178)
+- `prose`: mean score 1.17 when hurt vs 0.95 when healthy (confidence 0.194)
 - `degrees`: mean score 0.82 when hurt vs 0.83 when healthy (confidence 0.187)
 
 ## Per-situation accuracy for the winning variants

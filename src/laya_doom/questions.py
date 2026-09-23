@@ -104,6 +104,40 @@ TURN_SCAN_URGENT = {
     },
 }
 
+# --- turn, with closing distance as an option ------------------------------
+# Adding `advance` to the existing choice rather than asking a third question:
+# p95 latency is already 99.8 ms against a 114.3 ms interval and ~20 slots per
+# episode are skipped, so another forward pass would cost more decisions than the
+# extra action buys.
+
+TURN_APPROACH = {
+    "type": "choice",
+    "instructions": "Aim at an enemy, close the distance on it, or search for one if none is visible.",
+    "criteria": {
+        "left": "An enemy is visible and is to the left of the crosshair",
+        "right": "An enemy is visible and is to the right of the crosshair",
+        "hold": "An enemy is centred in the crosshair and is close enough to shoot, so stop moving and shoot it",
+        "advance": "An enemy is centred in the crosshair but is far away, so walk forward to close the distance",
+        "scan": "No enemy is visible, so keep turning to search the room for one",
+    },
+}
+
+# The same five options, written short. Question text is re-tokenised on every
+# tick, so verbose criteria are paid for continuously: the long form above pushed
+# p50 to ~98 ms against a 114.3 ms interval and cost roughly 40% of slots.
+
+TURN_APPROACH_TERSE = {
+    "type": "choice",
+    "instructions": "Aim at an enemy, close on it, or search for one.",
+    "criteria": {
+        "left": "An enemy is left of the crosshair",
+        "right": "An enemy is right of the crosshair",
+        "hold": "An enemy is centred and close enough to shoot",
+        "advance": "An enemy is centred but far away; walk closer",
+        "scan": "No enemy visible; keep turning to search",
+    },
+}
+
 # --- threat ----------------------------------------------------------------
 
 THREAT = {
@@ -139,11 +173,19 @@ THREAT_SURVIVAL = {
 #   fire -> FIRE_QUESTION ("should pull the trigger"), balanced accuracy 97%,
 #           against 71% and 69% for the two statement-shaped phrasings, which
 #           fired almost constantly (specificity 43% and 37%).
-#   turn -> TURN_CRITERIA_LED (mapping carried by the criteria, not the
-#           instructions), 98% against 85% and 72%.
+#   turn -> TURN_APPROACH, which adds `scan` (search when nothing is visible) and
+#           `advance` (close on a distant target) to the aim options.
+#
+# `turn` is the one place where the bench oracle and actual play disagree, and play
+# wins. TURN_APPROACH scores 85% against TURN_SCAN's 100% on the fixture oracle, yet
+# scores roughly 3x better in real episodes (+14.8 against +4.6 mean over 5). The
+# oracle asserted that advancing is for "aimed but far away" shots; in play its value
+# is that moving repositions the player and finds enemies, which the fixtures --
+# single frozen ticks -- cannot express. The oracle was measuring the wrong thing, so
+# it is reported rather than obeyed.
 BATTERY: dict[str, dict] = {
     "fire": FIRE_QUESTION,
-    "turn": TURN_SCAN,
+    "turn": TURN_APPROACH,
 }
 
 # Candidates the bench compares. Keys name the variant in the results table.
@@ -159,6 +201,8 @@ TURN_VARIANTS = {
     "criteria_led": TURN_CRITERIA_LED,
     "scan": TURN_SCAN,
     "scan_urgent": TURN_SCAN_URGENT,
+    "approach": TURN_APPROACH,
+    "approach_terse": TURN_APPROACH_TERSE,
 }
 
 THREAT_VARIANTS = {

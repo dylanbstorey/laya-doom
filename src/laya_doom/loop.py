@@ -35,6 +35,7 @@ instant policy fire roughly one decision per episode.
 
 from __future__ import annotations
 
+import math
 import statistics
 import threading
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -59,6 +60,21 @@ MS_PER_TIC = 1000.0 / TICS_PER_SECOND
 # reference demo's 10 Hz given a measured p95 of 76 ms and a worst case of 99 ms.
 DECISION_INTERVAL_TICS = 4
 DECISION_INTERVAL_MS = DECISION_INTERVAL_TICS * MS_PER_TIC
+
+# Doom turns 2.64 degrees per tic (measured), so one decision interval sweeps only
+# 10.6 degrees. That is not a search: the model re-decides every interval and can
+# reverse, leaving the view oscillating inside a narrow arc.
+#
+# A chosen `scan` therefore commits to a whole sweep -- one direction, at least 30
+# degrees -- surviving the normal per-interval decay. Holding the direction is
+# execution of the model's intent, in the same category as rendering `scan` as a
+# turn at all; a sweep that reverses every interval is not a sweep. The model still
+# decides *whether* to search, and any other answer cancels the commitment at once.
+TURN_DEGREES_PER_TIC = 2.64
+SWEEP_DEGREES = 30.0
+SWEEP_TICS = int(math.ceil(SWEEP_DEGREES / TURN_DEGREES_PER_TIC))  # 12 tics, ~343 ms
+SWEEP_MS = SWEEP_TICS * MS_PER_TIC
+SCAN_ANSWER = "scan"
 WARMUP_CALLS = 2  # the first call measured 686 ms cold; never let that hit a live episode
 
 
@@ -72,6 +88,7 @@ class TickRecord:
     action: list[int]
     buttons: list[str]
     fresh: bool          # a reply landed on this tick rather than the latch coasting
+    sweeping: bool       # a committed scan is still turning
     decision: Decision | None
     health: float
     ammo: float
@@ -92,6 +109,8 @@ class EpisodeResult:
     skipped_slots: int
     stale_replies: int
     errors: int
+    sweeps: int = 0
+    sweeps_interrupted: int = 0
     latencies_ms: list[float] = field(default_factory=list)
 
     @property
@@ -117,7 +136,8 @@ class EpisodeResult:
         return (
             f"score={self.score:.0f} kills={self.killcount:.0f} "
             f"decisions={self.decisions} ({rate}) applied={self.applied} "
-            f"skipped={self.skipped_slots} stale={self.stale_replies} errors={self.errors} "
+            f"skipped={self.skipped_slots} stale={self.stale_replies} "
+            f"sweeps={self.sweeps}/{self.sweeps_interrupted}int errors={self.errors} "
             f"latency p50={p50} p95={p95}"
         )
 
@@ -129,23 +149,42 @@ class ActionLatch:
     a Doom process or real latency.
     """
 
-    def __init__(self, buttons: Sequence[str], *, interval_ms: float = DECISION_INTERVAL_MS) -> None:
+    def __init__(
+        self,
+        buttons: Sequence[str],
+        *,
+        interval_ms: float = DECISION_INTERVAL_MS,
+        sweep_ms: float = SWEEP_MS,
+    ) -> None:
         self._buttons = list(buttons)
         self._interval_ms = interval_ms
+        self._sweep_ms = sweep_ms
         self._action = actions.neutral(buttons)
         self._expires_at = 0.0
         self._generation = 0
         self.stale_replies = 0
+        # A committed sweep outlives the ordinary one-interval decay.
+        self._sweep_expires_at = 0.0
+        self.sweeps_started = 0
+        self.sweeps_interrupted = 0
 
     @property
     def generation(self) -> int:
         return self._generation
+
+    @property
+    def sweeping(self) -> bool:
+        return self._sweep_expires_at > 0.0
+
+    def sweep_remaining_ms(self, now_ms: float) -> float:
+        return max(0.0, self._sweep_expires_at - now_ms)
 
     def bump_generation(self) -> int:
         """Invalidate every reply now in flight. Called when an episode restarts."""
         self._generation += 1
         self._action = actions.neutral(self._buttons)
         self._expires_at = 0.0
+        self._sweep_expires_at = 0.0
         return self._generation
 
     def apply(self, decision: Decision, generation: int, now_ms: float, *, fire_threshold: float) -> bool:
@@ -153,12 +192,36 @@ class ActionLatch:
         if generation != self._generation:
             self.stale_replies += 1
             return False
+
+        turn = decision.get("turn")
+        wants_scan = turn is not None and str(turn.value) == SCAN_ANSWER
+
+        if wants_scan:
+            # Start a sweep, or let one already running continue. Continuing rather
+            # than restarting is what keeps a sweep to one direction and one arc.
+            if not self.sweeping:
+                self._sweep_expires_at = now_ms + self._sweep_ms
+                self.sweeps_started += 1
+        elif self.sweeping:
+            # Anything else means the model has something better to do than search.
+            # Abandon the arc immediately rather than finishing it first.
+            self._sweep_expires_at = 0.0
+            self.sweeps_interrupted += 1
+
         self._action = actions.from_decision(self._buttons, decision, fire_threshold=fire_threshold)
         self._expires_at = now_ms + self._interval_ms
         return True
 
     def current(self, now_ms: float) -> list[int]:
-        """The buttons to press now. Neutral once the latched reply has expired."""
+        """The buttons to press now.
+
+        A committed sweep keeps its action past the ordinary interval decay, so the
+        turn covers real ground instead of stuttering for 10 degrees at a time.
+        """
+        if self.sweeping:
+            if now_ms < self._sweep_expires_at:
+                return list(self._action)
+            self._sweep_expires_at = 0.0
         if now_ms >= self._expires_at:
             self._action = actions.neutral(self._buttons)
         return list(self._action)
@@ -217,6 +280,7 @@ class DecisionLoop:
         real_time: bool = True,
         use_thread: bool = True,
         crosshair_tolerance_px: int = 0,
+        sweep_ms: float = SWEEP_MS,
     ) -> None:
         self.game = game
         self.client = client
@@ -235,7 +299,7 @@ class DecisionLoop:
         self.use_thread = use_thread
 
         self.buttons = actions.button_names(game)
-        self.latch = ActionLatch(self.buttons, interval_ms=self.interval_ms)
+        self.latch = ActionLatch(self.buttons, interval_ms=self.interval_ms, sweep_ms=sweep_ms)
         # Milliseconds of Doom elapsed this episode. The single time base.
         self._game_ms = 0.0
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="laya") if use_thread else None
@@ -348,6 +412,7 @@ class DecisionLoop:
                     action=action,
                     buttons=self.buttons,
                     fresh=applied,
+                    sweeping=self.latch.sweeping,
                     decision=decision,
                     health=observation.health,
                     ammo=observation.ammo,
@@ -358,6 +423,8 @@ class DecisionLoop:
         result.score = self.game.get_total_reward()
         result.killcount = self._last_killcount
         result.stale_replies = self.latch.stale_replies
+        result.sweeps = self.latch.sweeps_started
+        result.sweeps_interrupted = self.latch.sweeps_interrupted
         result.errors = len(self.errors)
         return result
 

@@ -174,3 +174,45 @@ footer { margin-top: 2rem; color: var(--faint); font-size: 0.78rem; }
 footer p { margin: 0.5rem 0; max-width: 78ch; }
 footer a { color: var(--dim); }
 .caveat { color: var(--dim); }
+
+/* --- committed sweep --- */
+.sweep {
+  margin: 10px 0 0;
+  font-size: 0.72rem;
+  font-family: var(--mono);
+  color: var(--warm);
+}
+
+/* --- decision log: every decision, not just the latest --- */
+.log {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  max-height: 16rem;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #120f0d;
+}
+
+.log-row {
+  display: grid;
+  grid-template-columns: 3.6rem 3.4rem 4.6rem 1fr 3.6rem;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 9px;
+  border-bottom: 1px solid #241e1a;
+  white-space: nowrap;
+}
+.log-row:last-child { border-bottom: none; }
+.log-row.fresh-sweep { background: #1d1710; }
+
+.log-tick { color: var(--faint); }
+.log-fire.yes { color: var(--hot); font-weight: 650; }
+.log-fire.no { color: var(--faint); }
+.log-turn { color: var(--ink); }
+.log-turn.scan { color: var(--warm); }
+.log-turn.advance { color: var(--good); }
+.log-conf { color: var(--dim); overflow: hidden; text-overflow: ellipsis; }
+.log-conf.unsure { color: var(--warm); }
+.log-lat { text-align: right; color: var(--faint); font-variant-numeric: tabular-nums; }
+.log-lat.over { color: var(--hot); }

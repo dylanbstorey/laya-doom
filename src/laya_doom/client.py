@@ -199,11 +199,18 @@ class LayaMpsClient:
         *,
         timeout: float = 10.0,
         include_metrics: bool = True,
+        busy_retries: int = 3,
+        busy_backoff_ms: float = 40.0,
     ) -> None:
         import httpx
 
         self.base_url = base_url.rstrip("/")
         self._include_metrics = include_metrics
+        # The server answers one request at a time and returns 503 while busy.
+        # A second client -- play.py alongside the web app, say -- would otherwise
+        # fail its warmup outright, which is a confusing way to learn that.
+        self._busy_retries = busy_retries
+        self._busy_backoff_ms = busy_backoff_ms
         self._http = httpx.Client(base_url=self.base_url, timeout=timeout)
 
     def config(self) -> dict:
@@ -226,21 +233,35 @@ class LayaMpsClient:
         return _normalise_response(questions, body, latency_ms)
 
     def _request(self, method: str, path: str, **kwargs: Any) -> dict:
+        import time
+
         import httpx
 
-        try:
-            response = self._http.request(method, path, **kwargs)
-        except httpx.ConnectError as exc:
-            raise DecisionError(
-                f"no laya-mps server at {self.base_url}. Start one with "
-                "`./scripts/serve.sh --memory full --question-batch-size 4` "
-                "in your laya-mps checkout."
-            ) from exc
-        except httpx.TimeoutException as exc:
-            raise DecisionError(f"laya-mps timed out after {self._http.timeout}") from exc
-        if response.status_code >= 400:
-            raise DecisionError(f"laya-mps returned {response.status_code}: {response.text[:400]}")
-        return response.json()
+        for attempt in range(self._busy_retries + 1):
+            try:
+                response = self._http.request(method, path, **kwargs)
+            except httpx.ConnectError as exc:
+                raise DecisionError(
+                    f"no laya-mps server at {self.base_url}. Start one with "
+                    "`./scripts/serve.sh --memory full --question-batch-size 4` "
+                    "in your laya-mps checkout."
+                ) from exc
+            except httpx.TimeoutException as exc:
+                raise DecisionError(f"laya-mps timed out after {self._http.timeout}") from exc
+
+            if response.status_code == 503 and attempt < self._busy_retries:
+                # Another client holds the single inference slot. Wait and retry.
+                time.sleep(self._busy_backoff_ms / 1000)
+                continue
+            if response.status_code == 503:
+                raise DecisionError(
+                    "laya-mps is busy with another client's inference. It serves one request at "
+                    "a time -- stop the other run (the web app or play.py) and retry."
+                )
+            if response.status_code >= 400:
+                raise DecisionError(f"laya-mps returned {response.status_code}: {response.text[:400]}")
+            return response.json()
+        raise DecisionError("laya-mps stayed busy across every retry")
 
     def close(self) -> None:
         self._http.close()

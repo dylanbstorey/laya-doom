@@ -73,10 +73,14 @@ lighting up as LAYA presses `turn left` / `turn right` / `attack`.
 - **What the model was asked** — the verbatim state text for this tick. Nothing is hidden.
 - **What it answered** — each typed answer with its *full* probability distribution, not
   just the winning label. `fire` is a `noul` (a probability that a statement is true);
-  `turn` is a 4-way `choice`.
+  `turn` is a 5-way `choice`.
 - Any answer whose confidence falls below 0.15 gets a **dashed amber border** and says so.
   That is the model reporting that it is guessing, which is the thing this model class is
   actually selling.
+- **Every decision** — a scrolling log of every reply this episode, newest first: tick,
+  whether it fired, which turn option it chose, per-answer confidence, and latency. The
+  answers panel shows the current decision; this is the record of what the model has
+  actually been doing.
 - **Latency** — last / p50 / p95 and the share of the frame budget used. The sparkline
   turns red on any decision that overran the interval.
 
@@ -130,9 +134,17 @@ so in words — the same job the reference Pong demo does when it computes "abov
 aligned" in JavaScript. What to *do* about it is entirely the model's. No scripted fallback
 quietly plays the game, and `actions.py` only thresholds and looks up.
 
-The one seam worth naming: when the model answers `scan`, the code renders that as a
-consistent turn direction. Choosing to search is the model's; sweeping one way rather than
-oscillating is mechanical execution.
+The one seam worth naming is `scan`. When the model chooses to search, the code renders that
+as a **committed sweep**: one direction, at least 30 degrees, held across several decision
+intervals. Doom turns 2.64°/tic (measured), so a single interval covers only 10.6° — and
+because the model re-decides every interval it could reverse, leaving the view oscillating
+inside a narrow arc instead of searching the room. A sweep that reverses every interval is not
+a sweep, so holding the direction is execution of the intent rather than a decision of its own.
+
+The model still decides *whether* to search, and **any other answer cancels the sweep
+immediately** — spotting an enemy interrupts the arc rather than finishing it first. The panel
+shows when a sweep is in progress, and the episode line reports how many sweeps ran and how
+many were cut short.
 
 ### The state text is the whole ball game
 
@@ -203,13 +215,38 @@ and a paired health sweep holding geometry fixed, it moved at most +0.17 on a 0�
 health fell from 100 to 5. It tracked danger far too weakly to show anyone, and it was
 costing a third of the frame budget.
 
-### It scans now
+### It searches and closes distance now
 
 The first battery shipped `hold` meaning *"centred in the crosshair, **or** no enemy is in
 sight"*, which instructed the model to sit still whenever its view was empty. It obediently
-held 88% of the time and waited for enemies to wander past. Giving searching its own `scan`
-option — and narrowing `hold` to "already aimed" — is the single largest change in the repo.
-The model picks `scan` correctly on 100% of empty-view fixtures.
+held 88% of the time and waited for enemies to wander past.
+
+The action space is now five options, and the last two are where the score came from:
+
+| option | meaning |
+| --- | --- |
+| `left` / `right` | an enemy is visible, off-centre — turn to aim |
+| `hold` | aimed and close enough — stop and shoot |
+| `advance` | aimed but distant — walk forward (`MOVE_FORWARD`, 3.3 units/tic) |
+| `scan` | nothing visible — commit to a ≥30° sweep to search |
+
+`defend_the_center.cfg` exposes only `TURN_LEFT`, `TURN_RIGHT` and `ATTACK`, so
+`MOVE_FORWARD` is added to the game's buttons on top of the scenario config.
+
+**`turn` is the one place where the fixture oracle and actual play disagree, and play wins.**
+The five-option question scores **85%** against the four-option version's **100%** on the
+fixture set, and yet scores roughly **3× better in real episodes**:
+
+| turn question | fixture accuracy | mean episode score | kills |
+| --- | ---: | ---: | ---: |
+| `scan` (no forward movement) | **100%** | +4.6 (sd 3.9) | 5.6 |
+| `approach` (adds `advance`) | 85% | **+13.4** (sd 5.1) | **14.4** |
+
+The oracle asserted that advancing is for "aimed but far away" shots. In play its value is
+that *moving repositions the player and finds enemies*, which a fixture — a single frozen
+tick — cannot express. The oracle was measuring the wrong thing, so it is reported rather than
+obeyed. Worth noting that `advance` is chosen only ~7% of the time, so the gain is not purely
+forward movement: the whole answer mix shifted, with `scan` rising from 16% to 24%.
 
 ### Honest scoreboard
 

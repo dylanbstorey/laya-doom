@@ -129,4 +129,54 @@ class TestBaselineParity:
 
         client = RandomClient(seed=1)
         seen = {str(client.decide({}, {})["turn"].value) for _ in range(200)}
-        assert seen == {"left", "right", "hold", "scan"}
+        from laya_doom.baselines import TURN_OPTIONS
+
+        assert seen == set(TURN_OPTIONS)
+
+
+MOVE_BUTTONS = ["TURN_LEFT", "TURN_RIGHT", "ATTACK", "MOVE_FORWARD"]
+
+
+class TestAdvance:
+    """`advance` closes distance on a target the model is already aimed at."""
+
+    def test_advance_presses_forward(self):
+        assert from_answers(MOVE_BUTTONS, fire=False, turn="advance") == [0, 0, 0, 1]
+
+    def test_advance_does_not_turn(self):
+        action = from_answers(MOVE_BUTTONS, fire=False, turn="advance")
+        assert action[0] == 0 and action[1] == 0
+
+    def test_advance_can_fire_while_closing(self):
+        assert from_answers(MOVE_BUTTONS, fire=True, turn="advance") == [0, 0, 1, 1]
+
+    def test_advance_is_inert_without_a_forward_button(self):
+        """Some scenarios expose no movement; the answer must not press a turn."""
+        assert from_answers(BUTTONS, fire=False, turn="advance") == [0, 0, 0]
+
+    def test_scripted_advances_on_a_distant_lined_up_enemy(self):
+        from laya_doom.baselines import ScriptedClient
+
+        decision = ScriptedClient().decide(
+            {
+                "an_enemy_is_lined_up_with_your_crosshair": True,
+                "nearest_enemy": {"where": "centred in your crosshair", "how_far": "far away",
+                                  "lined_up_with_crosshair": True},
+            },
+            {},
+        )
+        assert decision["turn"].value == "advance"
+        assert decision["fire"].value == 1.0, "it should still shoot while closing"
+
+    def test_scripted_holds_on_a_close_lined_up_enemy(self):
+        from laya_doom.baselines import ScriptedClient
+
+        decision = ScriptedClient().decide(
+            {
+                "an_enemy_is_lined_up_with_your_crosshair": True,
+                "nearest_enemy": {"where": "centred in your crosshair", "how_far": "close",
+                                  "lined_up_with_crosshair": True},
+            },
+            {},
+        )
+        assert decision["turn"].value == "hold"
