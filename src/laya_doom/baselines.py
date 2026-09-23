@@ -192,7 +192,8 @@ class RandomCorridorClient:
         return None
 
 
-DEATHMATCH_MOVES = ("advance", "hold", "aim_left", "aim_right", "dodge_left", "dodge_right", "retreat")
+DEATHMATCH_MOVES = ("advance", "scan", "grab", "hold", "aim_left", "aim_right",
+                    "dodge_left", "dodge_right", "retreat")
 WEAPON_CHOICES = ("keep", "shotgun", "chaingun", "rocket_launcher", "plasma_rifle", "pistol")
 
 
@@ -225,18 +226,14 @@ class DeathmatchScriptedClient:
         elif nearest:
             where = str(nearest.get("where", ""))
             move = "aim_left" if "left" in where else "aim_right" if "right" in where else "advance"
+        elif state.get("nearest_weapon_pickup_distance", 1e9) < 300:
+            # Same option the model is offered: the player starts with a pistol and
+            # stays on it unless something walks it onto a better weapon.
+            move = "grab"
         else:
-            move = "advance"
-
-        # Switch only when the weapon in hand has run dry; otherwise hold the line.
-        shots = float(state.get("shots_left_for_this_weapon", 99))
-        holding = str(state.get("weapon_in_hand", ""))
-        if shots <= 0:
-            weapon = "shotgun"
-        elif "pistol" in holding or "fist" in holding:
-            weapon = "chaingun"
-        else:
-            weapon = "keep"
+            # Nothing visible: look around. Walking forward without turning is how a
+            # policy ends up facing a wall for a whole episode having seen nothing.
+            move = "scan"
 
         probability = 1.0 if lined_up else 0.0
         return Decision(
@@ -245,8 +242,6 @@ class DeathmatchScriptedClient:
                                {"true": probability, "false": 1 - probability}, 1.0),
                 "move": Answer("move", "choice", move,
                                {o: 1.0 if o == move else 0.0 for o in DEATHMATCH_MOVES}, 1.0),
-                "weapon": Answer("weapon", "choice", weapon,
-                                 {o: 1.0 if o == weapon else 0.0 for o in WEAPON_CHOICES}, 1.0),
             },
             latency_ms=(time.perf_counter() - started) * 1000,
             model=self.model,

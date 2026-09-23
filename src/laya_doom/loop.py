@@ -96,6 +96,7 @@ COMMITMENT_TICS: dict[str, int] = {
     "dodge_left": 5,
     "dodge_right": 5,
     "retreat": 6,
+    "grab": 8,     # long enough to actually reach a pickup at 3.3 units/tic
 }
 
 # What may interrupt a running commitment. A shot lined up beats anything; getting
@@ -105,7 +106,7 @@ URGENCY: dict[str, int] = {
     "hold": 3,
     "dodge_left": 2, "dodge_right": 2, "retreat": 2,
     "aim_left": 1, "aim_right": 1, "left": 1, "right": 1,
-    "advance": 0, "scan": 0,
+    "advance": 0, "scan": 0, "grab": 0,
 }
 
 # A weapon switch costs the moment it takes, so hold the new weapon a while before

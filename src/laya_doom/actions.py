@@ -43,6 +43,7 @@ ANSWER_BUTTONS: dict[str, str | None] = {
     "dodge_left": "MOVE_LEFT",
     "dodge_right": "MOVE_RIGHT",
     "retreat": "MOVE_BACKWARD",
+    "grab": FORWARD_BUTTON,   # walk onto the pickup
     "stand": None,
     # deathmatch weapon slots. Separate buttons, so a weapon switch combines with
     # movement and firing in the same tick.

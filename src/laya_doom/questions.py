@@ -357,7 +357,8 @@ DEATHMATCH_MOVE = {
         "scores points. Choose how the player should move right now."
     ),
     "criteria": {
-        "advance": "No enemy needs dealing with right now, so move forward to find enemies and pickups",
+        "advance": "Enemies are visible or the way is clear, so move forward to cover ground and reach pickups",
+        "scan": "No enemy is visible, so turn on the spot to search the arena for one",
         "hold": "An enemy is centred in the crosshair, so stand still and shoot it",
         "aim_left": "An enemy is visible to the left of the crosshair, so turn left to aim at it",
         "aim_right": "An enemy is visible to the right of the crosshair, so turn right to aim at it",
@@ -427,21 +428,29 @@ DEATHMATCH_WEAPON = {
 # ordering here is explicit so the model has something to rank against.
 DEATHMATCH_MOVE_STRATEGY = {
     "type": "choice",
+    # Instructions stay short on purpose. laya-mps caps the question *head* -- the
+    # instructions alone -- at 192 tokens (`head_max_len`) and refuses the request
+    # rather than silently truncating it. The first draft of this variant was
+    # rejected outright with a 422.
+    #
+    # That cap is not a problem, because criteria are not subject to it, and the
+    # earlier `turn` bench already showed criteria-led beating instruction-led
+    # (98% against 85%). So the priority ordering lives in the criteria, each one
+    # saying where it sits in the list rather than only what it means.
     "instructions": (
         "The player is in a deathmatch arena. Only killing enemies scores points, and the player "
-        "cannot kill anything it cannot see, so the plan is: keep moving to find enemies; when "
-        "one appears, turn until it is centred; then stand still and shoot it until it dies; "
-        "break off only if badly hurt. Work down that list and pick the first step that applies "
-        "right now."
+        "cannot kill what it cannot see. Pick the first of these that applies."
     ),
     "criteria": {
-        "hold": "An enemy is centred in the crosshair, so stand still and keep shooting it",
-        "aim_left": "An enemy is visible to the left of the crosshair, so turn left until it is centred",
-        "aim_right": "An enemy is visible to the right of the crosshair, so turn right until it is centred",
-        "retreat": "The player is badly hurt and about to die, so back away",
-        "dodge_left": "An enemy is close and shooting, so sidestep left",
-        "dodge_right": "An enemy is close and shooting, so sidestep right",
-        "advance": "Nothing needs dealing with, so move forward to find enemies",
+        "hold": "FIRST: an enemy is centred in the crosshair, so stand still and keep shooting it",
+        "aim_left": "SECOND: an enemy is visible to the left of the crosshair, so turn left until it is centred",
+        "aim_right": "SECOND: an enemy is visible to the right of the crosshair, so turn right until it is centred",
+        "retreat": "THIRD: the player is badly hurt and about to die, so back away",
+        "dodge_left": "THIRD: an enemy is close and shooting, so sidestep left",
+        "dodge_right": "THIRD: an enemy is close and shooting, so sidestep right",
+        "grab": "FOURTH: no enemy needs dealing with and a weapon or health pickup is nearby, so walk to it and collect it",
+        "scan": "LAST: nothing at all is visible, so turn on the spot to search the arena, because walking in a straight line without looking around finds nothing",
+        "advance": "LAST: nothing needs dealing with and the way ahead is clear, so move forward to cover ground",
     },
 }
 
@@ -455,8 +464,22 @@ DEATHMATCH_WEAPON_VARIANTS = {
     "inventory": DEATHMATCH_WEAPON,
 }
 
+# Two questions, not three. The weapon question was **cut on evidence**, like
+# `threat` before it: across 4 episodes each, the `blind` and `inventory` variants
+# scored *identically* (+5.25 / +5.25, then +5.75 / +5.75), with identical kills and
+# identical move distributions, despite answering completely differently -- `blind`
+# chose pistol 39% of the time and `inventory` chose keep 40%.
+#
+# The harvest explains it: across 1436 lockstep ticks the player held the **pistol
+# 100% of the time and never carried a second weapon**, so every weapon answer was a
+# no-op. There was nothing to switch to. The question cost ~12 ms per decision
+# (197 ms against 185 ms) and changed nothing at all.
+#
+# The cause is worth keeping in view: the model chooses `advance` only 0.8% of the
+# time, so it stands and spins rather than walking to the weapons lying around it.
+# That is what `grab` in the strategy variant is for -- give it the capability
+# first, and the weapon question may become worth re-asking later.
 DEATHMATCH_BATTERY: dict[str, dict] = {
     "fire": FIRE_QUESTION,
-    "move": DEATHMATCH_MOVE,
-    "weapon": DEATHMATCH_WEAPON,
+    "move": DEATHMATCH_MOVE_STRATEGY,
 }
